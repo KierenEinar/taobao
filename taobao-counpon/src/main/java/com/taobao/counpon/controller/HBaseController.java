@@ -22,6 +22,7 @@ public class HBaseController {
     ResponseEntity<?> testHbaseGet (HModel model) {
         logger.info("HModel -> {}", model);
         String value =  hbaseService.get(model);
+        logger.info("value -> {}", value);
         return ResponseEntity.ok(value);
     }
 
