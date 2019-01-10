@@ -1,7 +1,7 @@
-package taobao.service;
+package com.taobao.counpon.service;
 
 import org.apache.hadoop.hbase.client.Table;
-import taobao.model.HModel;
+import com.taobao.counpon.model.HModel;
 
 import java.io.IOException;
 

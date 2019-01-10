@@ -1,4 +1,4 @@
-package taobao.service.impl;
+package com.taobao.counpon.service.impl;
 
 import org.apache.hadoop.hbase.TableName;
 import org.apache.hadoop.hbase.client.*;
@@ -7,8 +7,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.hadoop.hbase.HbaseTemplate;
 import org.springframework.data.hadoop.hbase.RowMapper;
 import org.springframework.stereotype.Service;
-import taobao.model.HModel;
-import taobao.service.HbaseService;
+import com.taobao.counpon.model.HModel;
+import com.taobao.counpon.service.HbaseService;
 
 import java.io.IOException;
 

@@ -1,4 +1,4 @@
-package taobao.model;
+package com.taobao.counpon.model;
 
 import java.io.Serializable;
 

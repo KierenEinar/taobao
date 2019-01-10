@@ -153,8 +153,6 @@
         <artifactId>hbase-client</artifactId>
         <version>${hbase-client.version}</version>
       </dependency>
-
-
     </dependencies>
   </dependencyManagement>
 

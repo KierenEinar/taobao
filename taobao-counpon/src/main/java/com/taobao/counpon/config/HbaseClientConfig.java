@@ -1,4 +1,4 @@
-package taobao.config;
+package com.taobao.counpon.config;
 
 import org.apache.hadoop.hbase.HBaseConfiguration;
 import org.apache.hadoop.hbase.client.*;

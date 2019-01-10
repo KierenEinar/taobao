@@ -1,4 +1,4 @@
-package taobao.service;
+package com.taobao.counpon.service;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -7,8 +7,8 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit4.SpringRunner;
-import taobao.App;
-import taobao.model.HModel;
+import com.taobao.counpon.App;
+import com.taobao.counpon.model.HModel;
 
 @SpringBootTest(classes = App.class)
 @RunWith(SpringRunner.class)
