@@ -1,5 +1,6 @@
 package com.taobao.counpon.controller;
 
+import com.taobao.core.model.APIResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,7 +24,7 @@ public class HBaseController {
         logger.info("HModel -> {}", model);
         String value =  hbaseService.get(model);
         logger.info("value -> {}", value);
-        return ResponseEntity.ok(value);
+        return ResponseEntity.ok(new APIResponse<String>(0, value));
     }
 
 }
