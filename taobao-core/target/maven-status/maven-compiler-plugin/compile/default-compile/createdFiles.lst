@@ -1,0 +1,3 @@
+com/taobao/core/config/datasource/DatasourceConfiguration.class
+com/taobao/core/config/shardingconfig/database/DataBaseShardingConfiguration.class
+com/taobao/core/config/mybatis/MyBatisConfiguration.class
