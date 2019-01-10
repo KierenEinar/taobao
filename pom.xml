@@ -33,12 +33,6 @@
   </properties>
   <dependencies>
 
-    <dependency>
-      <groupId>taobao</groupId>
-      <artifactId>taobao-core</artifactId>
-      <version>1.0.0-SNAPSHAOT</version>
-    </dependency>
-
     <!-- https://mvnrepository.com/artifact/org.springframework.boot/spring-boot-starter -->
     <dependency>
       <groupId>org.springframework.boot</groupId>
@@ -160,7 +154,16 @@
         <artifactId>hbase-client</artifactId>
         <version>${hbase-client.version}</version>
       </dependency>
+
+      <dependency>
+        <groupId>taobao</groupId>
+        <artifactId>taobao-core</artifactId>
+        <version>1.0.0-SNAPSHAOT</version>
+      </dependency>
+
     </dependencies>
+
+
   </dependencyManagement>
 
 </project>
