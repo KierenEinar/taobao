@@ -1,6 +1,0 @@
-com/taobao/user/mapper/UserMapper.class
-com/taobao/user/App.class
-com/taobao/user/controller/UserController.class
-com/taobao/user/entity/models/User.class
-com/taobao/user/service/UserService.class
-com/taobao/user/service/impl/UserServiceImpl.class

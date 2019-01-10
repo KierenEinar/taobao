@@ -40,4 +40,14 @@ public class HModel implements Serializable {
     public void setQualify(String qualify) {
         this.qualify = qualify;
     }
+
+    @Override
+    public String toString() {
+        return "HModel{" +
+                "tableName='" + tableName + '\'' +
+                ", rowKey='" + rowKey + '\'' +
+                ", familyColumn='" + familyColumn + '\'' +
+                ", qualify='" + qualify + '\'' +
+                '}';
+    }
 }
