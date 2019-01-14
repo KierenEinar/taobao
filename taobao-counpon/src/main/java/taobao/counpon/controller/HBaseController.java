@@ -11,8 +11,6 @@ import org.springframework.web.bind.annotation.RestController;
 import taobao.counpon.model.UsersCounpon;
 import taobao.hbase.data.HbaseRepository;
 
-import java.io.IOException;
-
 @RestController
 @RequestMapping("/hbase")
 public class HBaseController {
@@ -23,7 +21,7 @@ public class HBaseController {
     Logger logger = LoggerFactory.getLogger(HBaseController.class);
 
     @RequestMapping(value = "/put")
-    ResponseEntity<?> testHbasePut (@RequestBody UsersCounpon usersCounpon) throws IOException {
+    ResponseEntity<?> testHbasePut (@RequestBody UsersCounpon usersCounpon) {
         logger.info("HModel -> {}", usersCounpon);
         Boolean value =  hbaseRepository.upsert(usersCounpon);
         logger.info("value -> {}", value);

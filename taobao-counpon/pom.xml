@@ -22,26 +22,26 @@
 
     <dependency>
       <groupId>taobao</groupId>
-      <artifactId>taobao-hbase</artifactId>
+      <artifactId>taobao-hbase-orm-spring-boot-starter</artifactId>
     </dependency>
 
-    <dependency>
-      <groupId>org.springframework.data</groupId>
-      <artifactId>spring-data-hadoop</artifactId>
-      <exclusions>
+    <!--<dependency>-->
+      <!--<groupId>org.springframework.data</groupId>-->
+      <!--<artifactId>spring-data-hadoop</artifactId>-->
+      <!--<exclusions>-->
 
-        <exclusion>
-          <groupId>javax.servlet.jsp</groupId>
-          <artifactId>jsp-api</artifactId>
-        </exclusion>
+        <!--<exclusion>-->
+          <!--<groupId>javax.servlet.jsp</groupId>-->
+          <!--<artifactId>jsp-api</artifactId>-->
+        <!--</exclusion>-->
 
-        <exclusion>
-          <groupId>javax.servlet</groupId>
-          <artifactId>servlet-api</artifactId>
-        </exclusion>
+        <!--<exclusion>-->
+          <!--<groupId>javax.servlet</groupId>-->
+          <!--<artifactId>servlet-api</artifactId>-->
+        <!--</exclusion>-->
 
-      </exclusions>
-    </dependency>
+      <!--</exclusions>-->
+    <!--</dependency>-->
 
     <!--&lt;!&ndash; https://mvnrepository.com/artifact/org.apache.hbase/hbase-client &ndash;&gt;-->
     <dependency>

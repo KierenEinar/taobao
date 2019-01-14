@@ -2,8 +2,8 @@ package taobao.hbase.data;
 
 import com.google.common.collect.Lists;
 import org.apache.commons.lang.StringUtils;
+import org.apache.hadoop.hbase.Cell;
 import org.apache.hadoop.hbase.client.Put;
-import org.apache.hadoop.hbase.protobuf.generated.HBaseProtos;
 import org.apache.hadoop.hbase.util.Bytes;
 import org.springframework.util.Assert;
 import org.springframework.util.CollectionUtils;
@@ -14,12 +14,36 @@ import taobao.hbase.model.HModel;
 import taobao.hbase.model.HbaseModel;
 
 import java.lang.reflect.Field;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
-import java.util.UUID;
+import java.lang.reflect.Method;
+import java.lang.reflect.ParameterizedType;
+import java.util.*;
 
 public abstract class AbstractHbaseRepository<T extends HbaseModel> {
+
+    protected T newInstance () {
+        Class<T> clazz = getTClass();
+        T t = null;
+        try {
+            t = clazz.newInstance();
+        } catch (InstantiationException e) {
+            e.printStackTrace();
+        } catch (IllegalAccessException e) {
+            e.printStackTrace();
+        }
+        return t;
+    }
+
+
+    protected Class<T> getTClass () {
+        return (Class<T>) ((ParameterizedType)getClass().getGenericSuperclass()).getActualTypeArguments()[0];
+    }
+
+
+    protected String getTableName () {
+        HbaseEntity hbaseEntity = getTClass().getAnnotation(HbaseEntity.class);
+        return hbaseEntity.table();
+    }
+
 
     protected String getTableName (T t) {
         Assert.isTrue(t.getClass().isAnnotationPresent(HbaseEntity.class), "model should annotate with HbaseEntity");
@@ -85,7 +109,9 @@ public abstract class AbstractHbaseRepository<T extends HbaseModel> {
 
                     for (Object o : list) {
 
-                        String uuid = UUID.randomUUID().toString().replaceAll("-","");
+                        //String uuid = UUID.randomUUID().toString().replaceAll("-","");
+
+                        String uuid = o.toString();
 
                         if (!prefix.endsWith("-")) {
                             uuid = "-" + uuid;
@@ -114,5 +140,90 @@ public abstract class AbstractHbaseRepository<T extends HbaseModel> {
         }
         return hModels;
     }
+
+
+    protected void cloneValueIntoModelByHbaseCell (Cell cell, T model) {
+
+        Map<String, Field> fieldMap = findFamilyQualifyField (model);
+        String family = Bytes.toString(cell.getFamilyArray());
+        String qualify = Bytes.toString(cell.getQualifierArray());
+        byte value[] = cell.getValueArray();
+
+        Field field = null;
+
+        String fq = toColumnQualify(family, qualify);
+
+        if (fieldMap.containsKey(fq)) {
+            field = fieldMap.get(fq);
+        } else {
+            String k = fieldMap.keySet().stream().filter(i-> fq.contains(i)).findFirst().get();
+            if (fieldMap.containsKey(k)) {
+                field = fieldMap.get(k);
+            }
+        }
+
+        if (Objects.nonNull(field)) cloneValueIntoModelByHbaseCell(field, value, model);
+
+    }
+
+    protected void cloneValueIntoModelByHbaseCell (Field field, byte[] value, T model) {
+
+        Class clazz = field.getType();
+        field.setAccessible(Boolean.TRUE);
+        try {
+
+            field.set(model, transferValue(clazz, value));
+        } catch (IllegalAccessException e) {
+            e.printStackTrace();
+            throw new RuntimeException(e);
+        }
+    }
+
+    private Object transferValue (Class type, byte[] value) {
+
+        String typeName = type.getSimpleName();
+        String methodName = "to" + typeName;
+        try {
+            Method method = Bytes.class.getMethod(methodName, byte[].class);
+            return method.invoke(null, value);
+        } catch (Exception e) {
+            e.printStackTrace();
+            throw new RuntimeException(e);
+        }
+    }
+
+    protected Map<String, Field> findFamilyQualifyField (T t) {
+
+        Map<String, Field> fieldMap = new HashMap<>();
+        Field fields[] =  t.getClass().getDeclaredFields();
+        for (Field field : fields) {
+
+           if (!field.isAnnotationPresent(FamilyColumn.class) && !field.isAnnotationPresent(Qualify.class))
+               continue;
+
+           String column = field.getAnnotation(FamilyColumn.class).value();
+           String qualify = field.getAnnotation(Qualify.class).value();
+           String prefix = field.getAnnotation(Qualify.class).prefix();
+           String type = field.getAnnotation(Qualify.class).type();
+           if (Qualify.Type.mulit.equalsIgnoreCase(type)) {
+
+               Assert.isTrue(StringUtils.isNotBlank(prefix), "qualify type being multi, prefix must not null");
+               qualify = prefix;
+
+           }
+
+           Assert.isTrue(StringUtils.isNotBlank(column),"family column must declare");
+           fieldMap.put(toColumnQualify(column, qualify), field);
+
+        }
+        return fieldMap;
+    }
+
+    private String toColumnQualify (String column, String qualify) {
+        return column + "&" + qualify;
+    }
+
+
+
 
 }

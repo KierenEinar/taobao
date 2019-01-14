@@ -1,12 +1,11 @@
 package taobao.hbase.data.impl;
 
+import org.apache.commons.collections.CollectionUtils;
+import org.apache.hadoop.hbase.Cell;
 import org.apache.hadoop.hbase.TableName;
 import org.apache.hadoop.hbase.client.*;
 import org.apache.hadoop.hbase.util.Bytes;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.hadoop.hbase.HbaseTemplate;
-import org.springframework.data.hadoop.hbase.RowMapper;
-import org.springframework.stereotype.Service;
 import taobao.hbase.data.AbstractHbaseRepository;
 import taobao.hbase.data.HbaseRepository;
 import taobao.hbase.data.SimpleHbaseRespository;
@@ -16,27 +15,59 @@ import taobao.hbase.model.HbaseModel;
 import java.io.IOException;
 import java.util.List;
 
-
-@Service
 public class SimpleHbaseRepositoryProxy<T extends HbaseModel> extends AbstractHbaseRepository<T> implements HbaseRepository<T>, SimpleHbaseRespository{
 
-    @Autowired
-    HbaseTemplate hbaseTemplate;
+    private HbaseTemplate hbaseTemplate;
 
-    @Autowired
-    Connection connection;
+    private Connection connection;
 
+    public HbaseTemplate getHbaseTemplate() {
+        return hbaseTemplate;
+    }
 
-    public Boolean upsert(T t) throws IOException {
+    public void setHbaseTemplate(HbaseTemplate hbaseTemplate) {
+        this.hbaseTemplate = hbaseTemplate;
+    }
+
+    public Connection getConnection() {
+        return connection;
+    }
+
+    public void setConnection(Connection connection) {
+        this.connection = connection;
+    }
+
+    public SimpleHbaseRepositoryProxy (HbaseTemplate hbaseTemplate, Connection connection) {
+        this.hbaseTemplate = hbaseTemplate;
+        this.connection = connection;
+    }
+
+    public Boolean upsert(T t) {
         List<Put> puts = super.getPuts(t);
-        Table table = hTable(t);
-        table.put(puts);
+        Table table = null;
+        try {
+            table = hTable(t);
+            table.put(puts);
+        } catch (IOException e) {
+            e.printStackTrace();
+            return Boolean.FALSE;
+        }
+
         return Boolean.TRUE;
     }
 
 
-    public T findOne(T t) {
-        return null;
+    public T findOne(String rowkey) {
+
+        return hbaseTemplate.get(getTableName(), rowkey, ((result, i) -> {
+            List<Cell> cells = result.listCells();
+            if (CollectionUtils.isEmpty(cells)) return null;
+            T model = newInstance();
+            cells.stream().forEach(cell -> {
+                super.cloneValueIntoModelByHbaseCell(cell, model);
+            });
+            return model;
+        }));
     }
 
 
@@ -45,11 +76,7 @@ public class SimpleHbaseRepositoryProxy<T extends HbaseModel> extends AbstractHb
                 hModel.getRowkey(),
                 hModel.getFamilyColumn(),
                 hModel.getQualify(),
-                new RowMapper<String>() {
-                    public String mapRow(Result result, int i){
-                        return Bytes.toString(result.value());
-                    }
-                });
+                (Result result, int i)-> Bytes.toString(result.value()));
     }
 
     public Table hTable(T t) throws IOException {
