@@ -32,13 +32,13 @@ public abstract class AbstractHbaseRepository<T extends HbaseModel> {
     }
 
 
-    protected Class<T> getTClass () {
-        return (Class<T>) ((ParameterizedType)getClass().getGenericSuperclass()).getActualTypeArguments()[0];
-    }
+//    protected Class<T> getTClass () {
+//        return (Class<T>) ((ParameterizedType)getClass().getGenericSuperclass()).getActualTypeArguments()[0];
+//    }
 
 
-    protected String getTableName () {
-        HbaseEntity hbaseEntity = getTClass().getAnnotation(HbaseEntity.class);
+    protected String getTableName (Class<T> t) {
+        HbaseEntity hbaseEntity = t.getClass().getAnnotation(HbaseEntity.class);
         return hbaseEntity.table();
     }
 
