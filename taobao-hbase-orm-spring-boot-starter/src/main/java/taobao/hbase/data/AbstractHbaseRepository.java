@@ -45,7 +45,7 @@ public abstract class AbstractHbaseRepository<T extends HbaseModel> {
 
     protected String getTableName (T t) {
         Assert.isTrue(t.getClass().isAnnotationPresent(HbaseEntity.class), "model should annotate with HbaseEntity");
-        HbaseEntity hbaseEntity = t.getAnnotation(HbaseEntity.class);
+        HbaseEntity hbaseEntity = t.getClass().getAnnotation(HbaseEntity.class);
         return hbaseEntity.table();
     }
 
