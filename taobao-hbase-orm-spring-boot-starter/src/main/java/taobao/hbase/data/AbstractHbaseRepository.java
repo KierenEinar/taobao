@@ -161,7 +161,11 @@ public abstract class AbstractHbaseRepository<T extends HbaseModel> {
 
             logger.info("fieldMap -> {}", fieldMap);
 
-            String k = fieldMap.keySet().stream().filter(i-> fq.contains(i)).findFirst().get();
+            String k = fieldMap.keySet().stream().filter(i-> {
+                logger.info("fq -> {}", fq);
+                logger.info("i -> {}", i);
+                return fq.contains(i);
+            }).findFirst().get();
             if (fieldMap.containsKey(k)) {
                 field = fieldMap.get(k);
             }
