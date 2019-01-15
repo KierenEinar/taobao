@@ -20,17 +20,15 @@ import java.util.*;
 
 public abstract class AbstractHbaseRepository<T extends HbaseModel> {
 
-    protected T newInstance () {
-        Class<T> clazz = getTClass();
-        T t = null;
+    protected T newInstance (Class<T> tClass) {
         try {
-            t = clazz.newInstance();
+            return  tClass.newInstance();
         } catch (InstantiationException e) {
             e.printStackTrace();
         } catch (IllegalAccessException e) {
             e.printStackTrace();
         }
-        return t;
+        return null;
     }
 
 

@@ -57,12 +57,12 @@ public class SimpleHbaseRepositoryProxy<T extends HbaseModel> extends AbstractHb
     }
 
 
-    public T findOne(String rowkey) {
+    public T findOne(String rowkey, Class<T> tClass) {
 
         return hbaseTemplate.get(getTableName(), rowkey, ((result, i) -> {
             List<Cell> cells = result.listCells();
             if (CollectionUtils.isEmpty(cells)) return null;
-            T model = newInstance();
+            T model = newInstance(tClass);
             cells.stream().forEach(cell -> {
                 super.cloneValueIntoModelByHbaseCell(cell, model);
             });
