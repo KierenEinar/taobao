@@ -5,6 +5,8 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.hadoop.hbase.Cell;
 import org.apache.hadoop.hbase.client.Put;
 import org.apache.hadoop.hbase.util.Bytes;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.util.Assert;
 import org.springframework.util.CollectionUtils;
 import taobao.hbase.annotation.hbase.FamilyColumn;
@@ -19,6 +21,8 @@ import java.lang.reflect.ParameterizedType;
 import java.util.*;
 
 public abstract class AbstractHbaseRepository<T extends HbaseModel> {
+
+    Logger logger = LoggerFactory.getLogger(AbstractHbaseRepository.class);
 
     protected T newInstance (Class<T> tClass) {
         try {
@@ -154,6 +158,9 @@ public abstract class AbstractHbaseRepository<T extends HbaseModel> {
         if (fieldMap.containsKey(fq)) {
             field = fieldMap.get(fq);
         } else {
+
+            logger.info("fieldMap -> {}", fieldMap);
+
             String k = fieldMap.keySet().stream().filter(i-> fq.contains(i)).findFirst().get();
             if (fieldMap.containsKey(k)) {
                 field = fieldMap.get(k);
