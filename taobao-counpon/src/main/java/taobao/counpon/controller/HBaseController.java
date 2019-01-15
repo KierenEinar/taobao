@@ -30,8 +30,8 @@ public class HBaseController {
     }
 
     @RequestMapping(value = "/usercounpons/{rowkey}")
-    ResponseEntity<?> testHbaseGet (@PathVariable("rowkey") String rowkey) {
-        UsersCounpon usersCounpon = hbaseRepository.findOne(rowkey, UsersCounpon.class);
+    ResponseEntity<?> testHbaseGet (@PathVariable("rowkey") Long rowkey) {
+        UsersCounpon usersCounpon = hbaseRepository.findOne(rowkey+"", UsersCounpon.class);
         logger.info("usersCounpon -> {}", usersCounpon);
         return ResponseEntity.ok(new APIResponse<>(0, usersCounpon));
     }
