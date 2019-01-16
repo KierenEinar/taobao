@@ -35,12 +35,6 @@ public abstract class AbstractHbaseRepository<T extends HbaseModel> {
         return null;
     }
 
-
-//    protected Class<T> getTClass () {
-//        return (Class<T>) ((ParameterizedType)getClass().getGenericSuperclass()).getActualTypeArguments()[0];
-//    }
-
-
     protected String getTableName (Class<T> t) {
         HbaseEntity hbaseEntity = t.getAnnotation(HbaseEntity.class);
         return hbaseEntity.table();
@@ -147,9 +141,8 @@ public abstract class AbstractHbaseRepository<T extends HbaseModel> {
     protected void cloneValueIntoModelByHbaseCell (Cell cell, T model) {
 
         Map<String, Field> fieldMap = findFamilyQualifyField (model);
-        String family = Bytes.toString(cell.getFamilyArray());
-        String qualify = Bytes.toString(cell.getQualifierArray());
-        byte value[] = cell.getValueArray();
+        String family = Bytes.toString(cell.getFamilyArray(), cell.getFamilyOffset(), cell.getFamilyLength());
+        String qualify = Bytes.toString(cell.getQualifierArray(), cell.getQualifierOffset(), cell.getQualifierLength());
 
         Field field = null;
 
@@ -158,43 +151,68 @@ public abstract class AbstractHbaseRepository<T extends HbaseModel> {
         if (fieldMap.containsKey(fq)) {
             field = fieldMap.get(fq);
         } else {
-
-            logger.info("fieldMap -> {}", fieldMap);
-
-            String k = fieldMap.keySet().stream().filter(i-> {
-                logger.info("fq -> {}", fq);
-                logger.info("i -> {}", i);
-                return fq.contains(i);
-            }).findFirst().get();
+            String k = fieldMap.keySet().stream().filter(i-> fq.contains(i)).findFirst().get();
             if (fieldMap.containsKey(k)) {
                 field = fieldMap.get(k);
             }
         }
 
-        if (Objects.nonNull(field)) cloneValueIntoModelByHbaseCell(field, value, model);
+        if (Objects.nonNull(field)) cloneValueIntoModelByHbaseCell(field, cell.getValueArray(), cell.getValueOffset(), cell.getValueLength(), model);
 
     }
 
-    protected void cloneValueIntoModelByHbaseCell (Field field, byte[] value, T model) {
-
-        Class clazz = field.getType();
-        field.setAccessible(Boolean.TRUE);
+    protected void cloneValueIntoModelByHbaseCell (Field field, byte[] value, int offset, int length,  T model) {
         try {
-
-            field.set(model, transferValue(clazz, value));
+            Object v = transferValue(field, value, offset, length);
+            if (isFieldCollectionType(field.getType())) {
+                Collection collection = (Collection) field.get(model);
+                if (CollectionUtils.isEmpty(collection)) collection = genericCollectionForType(field.getType());
+                collection.add(v);
+                field.set(model, collection);
+            }else
+                field.set(model, v);
         } catch (IllegalAccessException e) {
             e.printStackTrace();
             throw new RuntimeException(e);
         }
     }
 
-    private Object transferValue (Class type, byte[] value) {
+    private Class<?> getCollectionFieldType (Field field) {
+        return  (Class<?>) ((ParameterizedType)field.getGenericType()).getActualTypeArguments()[0];
+    }
+
+    private Class<?> getFieldType  (Field field) {
+        return field.getType();
+    }
+
+    private Boolean isFieldCollectionType (Class<?> type) {
+        return Collection.class.isAssignableFrom(type);
+    }
+
+    private Collection<?> genericCollectionForType (Class<?> type) {
+        if (List.class.isAssignableFrom(type)) return new ArrayList<>();
+        if (Set.class.isAssignableFrom(type)) return new HashSet<>();
+        throw new RuntimeException("our hbase orm now just support list, set");
+    }
+
+    private Object transferValue (Field field, byte[] value, int offset, int length) {
+
+        field.setAccessible(Boolean.TRUE);
+
+        Class<?> type = getFieldType(field);
+
+        if (isFieldCollectionType(type)) {
+            type = getCollectionFieldType(field);
+        }
 
         String typeName = type.getSimpleName();
-        String methodName = "to" + typeName;
+
+        String methodName = "parse" + typeName;
         try {
-            Method method = Bytes.class.getMethod(methodName, byte[].class);
-            return method.invoke(null, value);
+           String v = Bytes.toString(value, offset, length);
+           if ("String".equals(typeName)) return v;
+           Method method = type.getMethod(methodName, String.class);
+           return method.invoke(this, v);
         } catch (Exception e) {
             e.printStackTrace();
             throw new RuntimeException(e);

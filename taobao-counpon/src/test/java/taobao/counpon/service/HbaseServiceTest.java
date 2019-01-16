@@ -37,7 +37,7 @@ public class HbaseServiceTest {
         usersCounpon.setRowkey("1");
         usersCounpon.setProductIds(Lists.newArrayList("1","2"));
 
-        hbaseRepository.upsert(usersCounpon);
+        hbaseRepository.insert(usersCounpon);
     }
 
 

@@ -13,6 +13,7 @@ import taobao.hbase.model.HModel;
 import taobao.hbase.model.HbaseModel;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 
 public class SimpleHbaseRepositoryProxy<T extends HbaseModel> extends AbstractHbaseRepository<T> implements HbaseRepository<T>, SimpleHbaseRespository{
@@ -42,7 +43,7 @@ public class SimpleHbaseRepositoryProxy<T extends HbaseModel> extends AbstractHb
         this.connection = connection;
     }
 
-    public Boolean upsert(T t) {
+    public Boolean insert(T t) {
         List<Put> puts = super.getPuts(t);
         Table table = null;
         try {
@@ -52,7 +53,6 @@ public class SimpleHbaseRepositoryProxy<T extends HbaseModel> extends AbstractHb
             e.printStackTrace();
             return Boolean.FALSE;
         }
-
         return Boolean.TRUE;
     }
 
@@ -66,6 +66,7 @@ public class SimpleHbaseRepositoryProxy<T extends HbaseModel> extends AbstractHb
             cells.stream().forEach(cell -> {
                 super.cloneValueIntoModelByHbaseCell(cell, model);
             });
+            model.setRowkey(rowkey);
             return model;
         }));
     }
