@@ -25,6 +25,11 @@
       <artifactId>taobao-hbase-orm-spring-boot-starter</artifactId>
     </dependency>
 
+    <dependency>
+      <groupId>taobao</groupId>
+      <artifactId>taobao-rocketmq-spring-boot-starter</artifactId>
+    </dependency>
+
     <!--<dependency>-->
       <!--<groupId>org.springframework.data</groupId>-->
       <!--<artifactId>spring-data-hadoop</artifactId>-->
@@ -69,7 +74,7 @@
     <!-- https://mvnrepository.com/artifact/org.springframework.cloud/spring-cloud-starter-eureka -->
     <dependency>
       <groupId>org.springframework.cloud</groupId>
-      <artifactId>spring-cloud-starter-eureka</artifactId>
+      <artifactId>spring-cloud-starter-netflix-eureka-client</artifactId>
     </dependency>
 
   </dependencies>
