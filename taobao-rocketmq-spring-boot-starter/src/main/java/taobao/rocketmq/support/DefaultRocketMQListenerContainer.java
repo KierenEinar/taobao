@@ -321,6 +321,10 @@ public class DefaultRocketMQListenerContainer implements RocketMQListenerContain
 
         String message = new String(messageExt.getBody(), Charset.forName(charset));
 
+        if (Objects.equals(String.class, messageType)) {
+            return message;
+        }
+
         try {
             return objectMapper.readValue(message, messageType);
         } catch (IOException e) {
