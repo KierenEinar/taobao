@@ -26,7 +26,7 @@ import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 
-public class DefaultRocketMQTemplate extends AbstractMessageSendingTemplate<String> implements InitializingBean, DisposableBean, RocketMQTemplate {
+public class DefaultRocketMQTemplate extends AbstractMessageSendingTemplate<String> implements RocketMQTemplate {
 
     Logger logger = LoggerFactory.getLogger(DefaultRocketMQTemplate.class);
 
@@ -291,8 +291,18 @@ public class DefaultRocketMQTemplate extends AbstractMessageSendingTemplate<Stri
         if (Objects.nonNull(producer)) {
             producer.shutdown();
         }
+
+        if (Objects.isNull(caches)) {
+            caches.forEach(this::shutdownTransactionProducer);
+            caches.clear();
+        }
     }
 
+    private void shutdownTransactionProducer(String groupName, TransactionMQProducer transactionMQProducer) {
+        if (Objects.nonNull(transactionMQProducer)) {
+            transactionMQProducer.shutdown();
+        }
+    }
 
 
     @Override
