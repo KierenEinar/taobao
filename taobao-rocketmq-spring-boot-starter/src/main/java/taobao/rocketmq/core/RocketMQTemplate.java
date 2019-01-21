@@ -1,12 +1,11 @@
 package taobao.rocketmq.core;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.apache.rocketmq.client.producer.DefaultMQProducer;
-import org.apache.rocketmq.client.producer.SendCallback;
-import org.apache.rocketmq.client.producer.SendResult;
+import org.apache.rocketmq.client.producer.*;
 import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.messaging.Message;
+import java.util.concurrent.ExecutorService;
 
 public interface RocketMQTemplate extends InitializingBean, DisposableBean, MessageConverter {
 
@@ -55,5 +54,14 @@ public interface RocketMQTemplate extends InitializingBean, DisposableBean, Mess
     void sendAsyncOrderly (String destination, Object payload, String hashKey, SendCallback sendCallback, long timeout);
 
     void sendAsyncOrderly (String destination, Object payload, String hashKey, SendCallback sendCallback);
+
+    Boolean createAndStartMQTransactionProducer(String name, RocketMQLocalTransactionListener bean, ExecutorService executorService);
+
+    LocalTransactionState convertTransactionState(RocketMQLocalTransactionState rocketMQLocalTransactionState);
+
+    TransactionSendResult sendMessageInTransaction(String groupName, String destination, Message message, Object args);
+
+    TransactionSendResult sendMessageInTransaction(String groupName, String destination, String payload, Object args);
+
 
 }

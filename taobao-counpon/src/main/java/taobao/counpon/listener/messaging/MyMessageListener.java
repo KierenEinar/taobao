@@ -1,9 +1,8 @@
-package taobao.counpon.service.impl;
+package taobao.counpon.listener.messaging;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
-import taobao.counpon.model.UsersCounpon;
 import taobao.rocketmq.annotation.RocketMQMessageListener;
 import taobao.rocketmq.core.RocketMQListener;
 

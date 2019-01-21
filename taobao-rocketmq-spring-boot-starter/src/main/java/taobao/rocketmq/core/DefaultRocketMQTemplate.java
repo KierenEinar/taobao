@@ -3,10 +3,7 @@ package taobao.rocketmq.core;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.rocketmq.client.exception.MQBrokerException;
 import org.apache.rocketmq.client.exception.MQClientException;
-import org.apache.rocketmq.client.producer.DefaultMQProducer;
-import org.apache.rocketmq.client.producer.MessageQueueSelector;
-import org.apache.rocketmq.client.producer.SendCallback;
-import org.apache.rocketmq.client.producer.SendResult;
+import org.apache.rocketmq.client.producer.*;
 import org.apache.rocketmq.client.producer.selector.SelectMessageQueueByHash;
 import org.apache.rocketmq.common.message.MessageExt;
 import org.apache.rocketmq.remoting.exception.RemotingException;
@@ -19,11 +16,15 @@ import org.springframework.messaging.MessageHeaders;
 import org.springframework.messaging.MessagingException;
 import org.springframework.messaging.core.AbstractMessageSendingTemplate;
 import org.springframework.messaging.support.MessageBuilder;
+import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
 import taobao.rocketmq.support.RocketMQHeaders;
 
 import java.nio.charset.Charset;
+import java.util.Map;
 import java.util.Objects;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ExecutorService;
 
 public class DefaultRocketMQTemplate extends AbstractMessageSendingTemplate<String> implements InitializingBean, DisposableBean, RocketMQTemplate {
 
@@ -36,6 +37,8 @@ public class DefaultRocketMQTemplate extends AbstractMessageSendingTemplate<Stri
     private String charset = "UTF-8";
 
     private MessageQueueSelector messageQueueSelector = new SelectMessageQueueByHash();
+
+    private Map<String, TransactionMQProducer> caches = new ConcurrentHashMap<>();
 
     public DefaultMQProducer getProducer() {
         return producer;
@@ -193,6 +196,88 @@ public class DefaultRocketMQTemplate extends AbstractMessageSendingTemplate<Stri
         sendAsyncOrderly(destination, payload, hashKey, sendCallback, producer.getSendMsgTimeout());
     }
 
+    @Override
+    public Boolean createAndStartMQTransactionProducer(String name, RocketMQLocalTransactionListener rocketMQLocalTransactionListener, ExecutorService executorService) {
+        if (caches.containsKey(name)) {
+            logger.warn("transaction producer duplicate defined groupName -> {}", name);
+            return Boolean.FALSE;
+        }
+        TransactionMQProducer transactionMQProducer = createMQTransactionProducer(name, rocketMQLocalTransactionListener, executorService);
+        caches.put(name, transactionMQProducer);
+        try {
+            transactionMQProducer.start();
+        } catch (MQClientException e) {
+            e.printStackTrace();
+            throw new RuntimeException(e);
+        }
+        return Boolean.TRUE;
+    }
+
+    @Override
+    public LocalTransactionState convertTransactionState(RocketMQLocalTransactionState rocketMQLocalTransactionState) {
+        switch (rocketMQLocalTransactionState) {
+            case COMMIT: return LocalTransactionState.COMMIT_MESSAGE;
+            case ROLLBACK: return LocalTransactionState.ROLLBACK_MESSAGE;
+            case UNKNOWN: return LocalTransactionState.UNKNOW;
+            default: throw new IllegalArgumentException(String.format("invalid rocketMQLocalTransactionState -> %s", rocketMQLocalTransactionState));
+        }
+    }
+
+
+    private TransactionMQProducer getTransactionProducer (String groupName){
+        return caches.get(groupName);
+    }
+
+
+    @Override
+    public TransactionSendResult sendMessageInTransaction(String groupName, String destination, Message message, Object args) {
+
+        TransactionMQProducer transactionMQProducer = getTransactionProducer(groupName);
+        org.apache.rocketmq.common.message.Message msg = this.convertToRocketMessage(objectMapper, charset, destination, message);
+        try {
+            TransactionSendResult transactionSendResult = transactionMQProducer.sendMessageInTransaction(msg,args);
+            return transactionSendResult;
+        } catch (MQClientException e) {
+            e.printStackTrace();
+            throw new RuntimeException(e);
+        }
+
+
+    }
+
+    @Override
+    public TransactionSendResult sendMessageInTransaction(String groupName, String destination, String payload, Object args) {
+       Message<?> message = this.doConvert(payload, null, null);
+       return sendMessageInTransaction(groupName, destination, message, args);
+    }
+
+    private TransactionMQProducer createMQTransactionProducer(String name, RocketMQLocalTransactionListener rocketMQLocalTransactionListener, ExecutorService executorService) {
+
+        Assert.notNull(producer, "default mqproducer must be create .... ");
+
+        TransactionMQProducer transactionMQProducer = new TransactionMQProducer();
+        transactionMQProducer.setNamesrvAddr(producer.getNamesrvAddr());
+        transactionMQProducer.setRetryTimesWhenSendAsyncFailed(producer.getRetryTimesWhenSendAsyncFailed());
+        transactionMQProducer.setRetryTimesWhenSendFailed(producer.getRetryTimesWhenSendFailed());
+        transactionMQProducer.setCompressMsgBodyOverHowmuch(producer.getCompressMsgBodyOverHowmuch());
+        transactionMQProducer.setRetryAnotherBrokerWhenNotStoreOK(producer.isRetryAnotherBrokerWhenNotStoreOK());
+        transactionMQProducer.setProducerGroup(name);
+        transactionMQProducer.setExecutorService(executorService);
+        transactionMQProducer.setSendMsgTimeout(producer.getSendMsgTimeout());
+        transactionMQProducer.setTransactionListener(new TransactionListener() {
+            @Override
+            public LocalTransactionState executeLocalTransaction(org.apache.rocketmq.common.message.Message msg, Object arg) {
+                return convertTransactionState(rocketMQLocalTransactionListener.executeLocalTransaction(msg, arg));
+            }
+
+            @Override
+            public LocalTransactionState checkLocalTransaction(MessageExt msg) {
+                return convertTransactionState(rocketMQLocalTransactionListener.checkLocalTransaction(msg));
+            }
+        });
+        return transactionMQProducer;
+    }
+
 
     @Override
     public void afterPropertiesSet() throws Exception {
@@ -212,7 +297,7 @@ public class DefaultRocketMQTemplate extends AbstractMessageSendingTemplate<Stri
 
     @Override
     protected void doSend(String s, Message<?> message) {
-
+        syncSend(s, message);
     }
 
     @Override

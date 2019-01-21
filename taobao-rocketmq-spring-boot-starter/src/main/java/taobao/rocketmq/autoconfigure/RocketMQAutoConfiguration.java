@@ -13,6 +13,8 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
 import org.springframework.util.Assert;
+import taobao.rocketmq.config.RocketMQTransactionAnnotationProcessor;
+import taobao.rocketmq.config.TransactionHandlerRegistry;
 import taobao.rocketmq.core.DefaultRocketMQTemplate;
 import taobao.rocketmq.core.RocketMQTemplate;
 
@@ -27,7 +29,7 @@ public class RocketMQAutoConfiguration {
 
     @Bean
     @ConditionalOnMissingBean(DefaultMQProducer.class)
-    public DefaultMQProducer defaultMQProducer (RocketMQProperties rocketMQProperties) {
+    DefaultMQProducer defaultMQProducer (RocketMQProperties rocketMQProperties) {
         DefaultMQProducer defaultMQProducer = new DefaultMQProducer();
 
         Assert.hasText(rocketMQProperties.getNameServer(), "rocketmq namesrv not null");
@@ -51,6 +53,15 @@ public class RocketMQAutoConfiguration {
         return defaultRocketMQTemplate;
     }
 
+    @Bean
+    @ConditionalOnClass(RocketMQTemplate.class)
+    TransactionHandlerRegistry transactionHandlerRegistry (RocketMQTemplate rocketMQTemplate) {
+        return new TransactionHandlerRegistry(rocketMQTemplate);
+    }
 
-
+    @Bean
+    @ConditionalOnClass(TransactionHandlerRegistry.class)
+    RocketMQTransactionAnnotationProcessor rocketMQTransactionAnnotationProcessor (TransactionHandlerRegistry transactionHandlerRegistry) {
+        return new RocketMQTransactionAnnotationProcessor(transactionHandlerRegistry);
+    }
 }
