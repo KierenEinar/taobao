@@ -1,5 +1,6 @@
 package taobao.product.mapper;
 
+import io.shardingsphere.core.keygen.DefaultKeyGenerator;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,10 +25,12 @@ public class ProductMapperTest {
     @Test
     public void testInsert () {
         Product product = new Product();
+        String productId = new DefaultKeyGenerator().generateKey().toString();
+        product.setProductId(productId);
         product.setName("macbook pro");
         product.setTitle("京东精选 Apple MacBook Pro 13.3英寸笔记本电脑 深空灰色 2018新款（四核八代i5 8G 256G固态硬盘 MR9Q2CH/A）");
         product.setCreateTime(new Date());
-        productMapper.insert(product);
+        productMapper.insertSelective(product);
         ProductSpecsAttributeKey productSpecsAttributeKey = new ProductSpecsAttributeKey();
         productSpecsAttributeKey.setName("颜色");
         productSpecsAttributeKey.setProductId(product.getProductId());

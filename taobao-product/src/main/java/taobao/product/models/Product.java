@@ -1,5 +1,9 @@
 package taobao.product.models;
 
+import io.shardingsphere.core.keygen.DefaultKeyGenerator;
+import io.shardingsphere.core.routing.strategy.ShardingAlgorithm;
+import org.apache.commons.lang.StringUtils;
+
 import java.util.Date;
 
 public class Product {

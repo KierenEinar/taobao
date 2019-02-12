@@ -59,6 +59,9 @@
         #{html,jdbcType=LONGVARCHAR},
       </if>
     </trim>
+    <selectKey resultType="java.lang.String" order="AFTER" keyProperty="productId">
+      select last_insert_id() as product_id
+    </selectKey>
   </insert>
   <update id="updateByPrimaryKeySelective" parameterType="taobao.product.models.Product">
     update product
