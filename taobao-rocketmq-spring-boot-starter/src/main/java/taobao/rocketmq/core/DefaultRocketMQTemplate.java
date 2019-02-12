@@ -26,7 +26,7 @@ import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 
-public class DefaultRocketMQTemplate extends AbstractMessageSendingTemplate<String> implements InitializingBean, DisposableBean, RocketMQTemplate {
+public class DefaultRocketMQTemplate extends AbstractMessageSendingTemplate<String> implements RocketMQTemplate {
 
     Logger logger = LoggerFactory.getLogger(DefaultRocketMQTemplate.class);
 
