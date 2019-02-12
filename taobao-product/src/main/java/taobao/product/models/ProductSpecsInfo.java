@@ -3,24 +3,24 @@ package taobao.product.models;
 import java.util.Date;
 
 public class ProductSpecsInfo {
-    private String id;
+    private Long id;
 
     private String name;
 
     private String value;
 
-    private String productId;
+    private Long productId;
 
-    private String productSpecsId;
+    private Long productSpecsId;
 
     private Date createTime;
 
-    public String getId() {
+    public Long getId() {
         return id;
     }
 
-    public void setId(String id) {
-        this.id = id == null ? null : id.trim();
+    public void setId(Long id) {
+        this.id = id;
     }
 
     public String getName() {
@@ -39,20 +39,20 @@ public class ProductSpecsInfo {
         this.value = value == null ? null : value.trim();
     }
 
-    public String getProductId() {
+    public Long getProductId() {
         return productId;
     }
 
-    public void setProductId(String productId) {
-        this.productId = productId == null ? null : productId.trim();
+    public void setProductId(Long productId) {
+        this.productId = productId;
     }
 
-    public String getProductSpecsId() {
+    public Long getProductSpecsId() {
         return productSpecsId;
     }
 
-    public void setProductSpecsId(String productSpecsId) {
-        this.productSpecsId = productSpecsId == null ? null : productSpecsId.trim();
+    public void setProductSpecsId(Long productSpecsId) {
+        this.productSpecsId = productSpecsId;
     }
 
     public Date getCreateTime() {

@@ -1,13 +1,9 @@
 package taobao.product.models;
 
-import io.shardingsphere.core.keygen.DefaultKeyGenerator;
-import io.shardingsphere.core.routing.strategy.ShardingAlgorithm;
-import org.apache.commons.lang.StringUtils;
-
 import java.util.Date;
 
 public class Product {
-    private String productId;
+    private Long productId;
 
     private String name;
 
@@ -19,12 +15,12 @@ public class Product {
 
     private String html;
 
-    public String getProductId() {
+    public Long getProductId() {
         return productId;
     }
 
-    public void setProductId(String productId) {
-        this.productId = productId == null ? null : productId.trim();
+    public void setProductId(Long productId) {
+        this.productId = productId;
     }
 
     public String getName() {

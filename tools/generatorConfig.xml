@@ -24,6 +24,41 @@
                enableUpdateByExample="false" >
             <generatedKey column="id" identity="true" sqlStatement="Mysql"/>
         </table>
+        <table tableName="product" domainObjectName="Product"
+               enableSelectByExample="false"
+               enableDeleteByExample="false"
+               enableCountByExample= "false"
+               enableUpdateByExample="false" >
+            <generatedKey column="id" identity="true" sqlStatement="Mysql"/>
+        </table>
+        <table tableName="product_specs_attribute_key" domainObjectName="ProductSpecsAttributeKey"
+               enableSelectByExample="false"
+               enableDeleteByExample="false"
+               enableCountByExample= "false"
+               enableUpdateByExample="false" >
+            <generatedKey column="id" identity="true" sqlStatement="Mysql"/>
+        </table>
+        <table tableName="product_specs_attribute_value" domainObjectName="ProductSpecsAttributeValue"
+               enableSelectByExample="false"
+               enableDeleteByExample="false"
+               enableCountByExample= "false"
+               enableUpdateByExample="false" >
+            <generatedKey column="id" identity="true" sqlStatement="Mysql"/>
+        </table>
+        <table tableName="product_specs_info" domainObjectName="ProductSpecsInfo"
+               enableSelectByExample="false"
+               enableDeleteByExample="false"
+               enableCountByExample= "false"
+               enableUpdateByExample="false" >
+            <generatedKey column="id" identity="true" sqlStatement="Mysql"/>
+        </table>
+        <table tableName="product_specs_param" domainObjectName="ProductSpecsParam"
+               enableSelectByExample="false"
+               enableDeleteByExample="false"
+               enableCountByExample= "false"
+               enableUpdateByExample="false" >
+            <generatedKey column="id" identity="true" sqlStatement="Mysql"/>
+        </table>
     </context>
 </generatorConfiguration>
 
