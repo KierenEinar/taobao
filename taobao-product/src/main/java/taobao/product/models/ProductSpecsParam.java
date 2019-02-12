@@ -2,12 +2,14 @@ package taobao.product.models;
 
 import java.util.Date;
 
-public class ProductSpecsAttributeKey {
+public class ProductSpecsParam {
     private String id;
 
     private String name;
 
-    private String productId;
+    private String value;
+
+    private String productSpecsId;
 
     private Date createTime;
 
@@ -27,12 +29,20 @@ public class ProductSpecsAttributeKey {
         this.name = name == null ? null : name.trim();
     }
 
-    public String getProductId() {
-        return productId;
+    public String getValue() {
+        return value;
     }
 
-    public void setProductId(String productId) {
-        this.productId = productId == null ? null : productId.trim();
+    public void setValue(String value) {
+        this.value = value == null ? null : value.trim();
+    }
+
+    public String getProductSpecsId() {
+        return productSpecsId;
+    }
+
+    public void setProductSpecsId(String productSpecsId) {
+        this.productSpecsId = productSpecsId == null ? null : productSpecsId.trim();
     }
 
     public Date getCreateTime() {
