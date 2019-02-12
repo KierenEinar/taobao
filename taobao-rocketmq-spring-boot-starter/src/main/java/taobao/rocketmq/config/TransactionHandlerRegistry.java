@@ -1,12 +1,13 @@
 package taobao.rocketmq.config;
 
+import org.springframework.beans.factory.DisposableBean;
 import taobao.rocketmq.core.RocketMQTemplate;
 
 import java.util.Collections;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
-public class TransactionHandlerRegistry {
+public class TransactionHandlerRegistry implements DisposableBean {
 
     private RocketMQTemplate rocketMQTemplate;
 
@@ -26,4 +27,8 @@ public class TransactionHandlerRegistry {
     }
 
 
+    @Override
+    public void destroy() throws Exception {
+        listenerContainers.clear();
+    }
 }

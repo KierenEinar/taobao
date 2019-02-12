@@ -291,8 +291,18 @@ public class DefaultRocketMQTemplate extends AbstractMessageSendingTemplate<Stri
         if (Objects.nonNull(producer)) {
             producer.shutdown();
         }
+
+        if (Objects.isNull(caches)) {
+            caches.forEach(this::shutdownTransactionProducer);
+            caches.clear();
+        }
     }
 
+    private void shutdownTransactionProducer(String groupName, TransactionMQProducer transactionMQProducer) {
+        if (Objects.nonNull(transactionMQProducer)) {
+            transactionMQProducer.shutdown();
+        }
+    }
 
 
     @Override
