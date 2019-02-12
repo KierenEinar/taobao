@@ -3,7 +3,7 @@ package taobao.product.models;
 import java.util.Date;
 
 public class Product {
-    private String id;
+    private String productId;
 
     private String name;
 
@@ -15,12 +15,12 @@ public class Product {
 
     private String html;
 
-    public String getId() {
-        return id;
+    public String getProductId() {
+        return productId;
     }
 
-    public void setId(String id) {
-        this.id = id == null ? null : id.trim();
+    public void setProductId(String productId) {
+        this.productId = productId == null ? null : productId.trim();
     }
 
     public String getName() {

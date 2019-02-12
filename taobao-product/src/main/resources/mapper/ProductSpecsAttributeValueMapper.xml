@@ -5,6 +5,68 @@
     <id column="id" jdbcType="VARCHAR" property="id" />
     <result column="value" jdbcType="VARCHAR" property="value" />
     <result column="attr_id" jdbcType="VARCHAR" property="attrId" />
+    <result column="product_id" jdbcType="VARCHAR" property="productId" />
+    <result column="create_time" jdbcType="TIMESTAMP" property="createTime" />
+  </resultMap>
+  <sql id="Base_Column_List">
+    id, value, attr_id, product_id, create_time
+  </sql>
+  <insert id="insertSelective" parameterType="taobao.product.models.ProductSpecsAttributeValue">
+    <selectKey keyProperty="id" order="AFTER" resultType="java.lang.String">
+      SELECT LAST_INSERT_ID()
+    </selectKey>
+    insert into product_specs_attribute_value
+    <trim prefix="(" suffix=")" suffixOverrides=",">
+      <if test="value != null">
+        value,
+      </if>
+      <if test="attrId != null">
+        attr_id,
+      </if>
+      <if test="productId != null">
+        product_id,
+      </if>
+      <if test="createTime != null">
+        create_time,
+      </if>
+    </trim>
+    <trim prefix="values (" suffix=")" suffixOverrides=",">
+      <if test="value != null">
+        #{value,jdbcType=VARCHAR},
+      </if>
+      <if test="attrId != null">
+        #{attrId,jdbcType=VARCHAR},
+      </if>
+      <if test="productId != null">
+        #{productId,jdbcType=VARCHAR},
+      </if>
+      <if test="createTime != null">
+        #{createTime,jdbcType=TIMESTAMP},
+      </if>
+    </trim>
+  </insert>
+  <update id="updateByPrimaryKeySelective" parameterType="taobao.product.models.ProductSpecsAttributeValue">
+    update product_specs_attribute_value
+    <set>
+      <if test="value != null">
+        value = #{value,jdbcType=VARCHAR},
+      </if>
+      <if test="attrId != null">
+        attr_id = #{attrId,jdbcType=VARCHAR},
+      </if>
+      <if test="productId != null">
+        product_id = #{productId,jdbcType=VARCHAR},
+      </if>
+      <if test="createTime != null">
+        create_time = #{createTime,jdbcType=TIMESTAMP},
+      </if>
+    </set>
+    where id = #{id,jdbcType=VARCHAR}
+  </update>
+  <resultMap id="BaseResultMap" type="taobao.product.models.ProductSpecsAttributeValue">
+    <id column="id" jdbcType="VARCHAR" property="id" />
+    <result column="value" jdbcType="VARCHAR" property="value" />
+    <result column="attr_id" jdbcType="VARCHAR" property="attrId" />
     <result column="create_time" jdbcType="TIMESTAMP" property="createTime" />
   </resultMap>
   <sql id="Base_Column_List">

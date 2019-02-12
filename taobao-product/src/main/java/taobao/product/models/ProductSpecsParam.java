@@ -9,6 +9,8 @@ public class ProductSpecsParam {
 
     private String value;
 
+    private String productId;
+
     private String productSpecsId;
 
     private Date createTime;
@@ -35,6 +37,14 @@ public class ProductSpecsParam {
 
     public void setValue(String value) {
         this.value = value == null ? null : value.trim();
+    }
+
+    public String getProductId() {
+        return productId;
+    }
+
+    public void setProductId(String productId) {
+        this.productId = productId == null ? null : productId.trim();
     }
 
     public String getProductSpecsId() {

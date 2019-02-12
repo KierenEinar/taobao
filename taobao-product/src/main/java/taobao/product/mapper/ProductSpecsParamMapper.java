@@ -17,9 +17,11 @@ public interface ProductSpecsParamMapper {
 
     @Insert({
         "insert into product_specs_param (name, value, ",
-        "product_specs_id, create_time)",
+        "product_id, product_specs_id, ",
+        "create_time)",
         "values (#{name,jdbcType=VARCHAR}, #{value,jdbcType=VARCHAR}, ",
-        "#{productSpecsId,jdbcType=VARCHAR}, #{createTime,jdbcType=TIMESTAMP})"
+        "#{productId,jdbcType=VARCHAR}, #{productSpecsId,jdbcType=VARCHAR}, ",
+        "#{createTime,jdbcType=TIMESTAMP})"
     })
     @SelectKey(statement="SELECT LAST_INSERT_ID()", keyProperty="id", before=false, resultType=String.class)
     int insert(ProductSpecsParam record);
@@ -28,7 +30,7 @@ public interface ProductSpecsParamMapper {
 
     @Select({
         "select",
-        "id, name, value, product_specs_id, create_time",
+        "id, name, value, product_id, product_specs_id, create_time",
         "from product_specs_param",
         "where id = #{id,jdbcType=VARCHAR}"
     })
@@ -41,6 +43,7 @@ public interface ProductSpecsParamMapper {
         "update product_specs_param",
         "set name = #{name,jdbcType=VARCHAR},",
           "value = #{value,jdbcType=VARCHAR},",
+          "product_id = #{productId,jdbcType=VARCHAR},",
           "product_specs_id = #{productSpecsId,jdbcType=VARCHAR},",
           "create_time = #{createTime,jdbcType=TIMESTAMP}",
         "where id = #{id,jdbcType=VARCHAR}"

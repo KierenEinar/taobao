@@ -9,6 +9,8 @@ public class ProductSpecsAttributeValue {
 
     private String attrId;
 
+    private String productId;
+
     private Date createTime;
 
     public String getId() {
@@ -33,6 +35,14 @@ public class ProductSpecsAttributeValue {
 
     public void setAttrId(String attrId) {
         this.attrId = attrId == null ? null : attrId.trim();
+    }
+
+    public String getProductId() {
+        return productId;
+    }
+
+    public void setProductId(String productId) {
+        this.productId = productId == null ? null : productId.trim();
     }
 
     public Date getCreateTime() {

@@ -63,4 +63,66 @@
     </set>
     where id = #{id,jdbcType=VARCHAR}
   </update>
+  <resultMap id="BaseResultMap" type="taobao.product.models.ProductSpecs">
+    <id column="id" jdbcType="VARCHAR" property="id" />
+    <result column="product_id" jdbcType="VARCHAR" property="productId" />
+    <result column="attrs" jdbcType="VARCHAR" property="attrs" />
+    <result column="stock" jdbcType="INTEGER" property="stock" />
+    <result column="price" jdbcType="DECIMAL" property="price" />
+  </resultMap>
+  <sql id="Base_Column_List">
+    id, product_id, attrs, stock, price
+  </sql>
+  <insert id="insertSelective" parameterType="taobao.product.models.ProductSpecs">
+    <selectKey keyProperty="id" order="AFTER" resultType="java.lang.String">
+      SELECT LAST_INSERT_ID()
+    </selectKey>
+    insert into product_specs
+    <trim prefix="(" suffix=")" suffixOverrides=",">
+      <if test="productId != null">
+        product_id,
+      </if>
+      <if test="attrs != null">
+        attrs,
+      </if>
+      <if test="stock != null">
+        stock,
+      </if>
+      <if test="price != null">
+        price,
+      </if>
+    </trim>
+    <trim prefix="values (" suffix=")" suffixOverrides=",">
+      <if test="productId != null">
+        #{productId,jdbcType=VARCHAR},
+      </if>
+      <if test="attrs != null">
+        #{attrs,jdbcType=VARCHAR},
+      </if>
+      <if test="stock != null">
+        #{stock,jdbcType=INTEGER},
+      </if>
+      <if test="price != null">
+        #{price,jdbcType=DECIMAL},
+      </if>
+    </trim>
+  </insert>
+  <update id="updateByPrimaryKeySelective" parameterType="taobao.product.models.ProductSpecs">
+    update product_specs
+    <set>
+      <if test="productId != null">
+        product_id = #{productId,jdbcType=VARCHAR},
+      </if>
+      <if test="attrs != null">
+        attrs = #{attrs,jdbcType=VARCHAR},
+      </if>
+      <if test="stock != null">
+        stock = #{stock,jdbcType=INTEGER},
+      </if>
+      <if test="price != null">
+        price = #{price,jdbcType=DECIMAL},
+      </if>
+    </set>
+    where id = #{id,jdbcType=VARCHAR}
+  </update>
 </mapper>

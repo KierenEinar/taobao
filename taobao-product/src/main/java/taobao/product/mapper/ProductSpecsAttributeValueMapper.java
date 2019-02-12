@@ -17,9 +17,9 @@ public interface ProductSpecsAttributeValueMapper {
 
     @Insert({
         "insert into product_specs_attribute_value (value, attr_id, ",
-        "create_time)",
+        "product_id, create_time)",
         "values (#{value,jdbcType=VARCHAR}, #{attrId,jdbcType=VARCHAR}, ",
-        "#{createTime,jdbcType=TIMESTAMP})"
+        "#{productId,jdbcType=VARCHAR}, #{createTime,jdbcType=TIMESTAMP})"
     })
     @SelectKey(statement="SELECT LAST_INSERT_ID()", keyProperty="id", before=false, resultType=String.class)
     int insert(ProductSpecsAttributeValue record);
@@ -28,7 +28,7 @@ public interface ProductSpecsAttributeValueMapper {
 
     @Select({
         "select",
-        "id, value, attr_id, create_time",
+        "id, value, attr_id, product_id, create_time",
         "from product_specs_attribute_value",
         "where id = #{id,jdbcType=VARCHAR}"
     })
@@ -41,6 +41,7 @@ public interface ProductSpecsAttributeValueMapper {
         "update product_specs_attribute_value",
         "set value = #{value,jdbcType=VARCHAR},",
           "attr_id = #{attrId,jdbcType=VARCHAR},",
+          "product_id = #{productId,jdbcType=VARCHAR},",
           "create_time = #{createTime,jdbcType=TIMESTAMP}",
         "where id = #{id,jdbcType=VARCHAR}"
     })
