@@ -1,10 +1,6 @@
 package taobao.product.mapper;
 
-import org.apache.ibatis.annotations.Delete;
-import org.apache.ibatis.annotations.Insert;
-import org.apache.ibatis.annotations.ResultMap;
-import org.apache.ibatis.annotations.Select;
-import org.apache.ibatis.annotations.Update;
+import org.apache.ibatis.annotations.*;
 import taobao.product.models.Product;
 
 public interface ProductMapper {
@@ -15,13 +11,14 @@ public interface ProductMapper {
     int deleteByPrimaryKey(Long productId);
 
     @Insert({
-        "insert into product (product_id, name, ",
+        "insert into product ( name, ",
         "title, create_time, ",
         "update_time, html)",
-        "values (#{productId,jdbcType=BIGINT}, #{name,jdbcType=VARCHAR}, ",
+        "values ( #{name,jdbcType=VARCHAR}, ",
         "#{title,jdbcType=VARCHAR}, #{createTime,jdbcType=TIMESTAMP}, ",
         "#{updateTime,jdbcType=TIMESTAMP}, #{html,jdbcType=LONGVARCHAR})"
     })
+    @SelectKey(statement = "select last_insert_id() as product_id", keyProperty = "productId", keyColumn = "product_id", before = false, resultType = Long.class)
     int insert(Product record);
 
     int insertSelective(Product record);

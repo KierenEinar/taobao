@@ -11,7 +11,7 @@ import taobao.product.vo.ProductTemplateCreateVo;
 import java.util.List;
 
 public interface ProductService {
-    void createProduct(Product product);
+    Product createProduct(Product product);
     List<ProductSpecs> createProductAttrsAndStock(ProductCreateAttrsStockWebVo productCreateAttrsStockWebVo);
     void createProductParamsTemplate(ProductTemplateCreateVo templateCreateVo);
     void createProdouctParamsItems(List<ProductParamsCreateVo> productParamsCreateVo);

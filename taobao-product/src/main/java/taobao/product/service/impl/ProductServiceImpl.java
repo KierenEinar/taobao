@@ -51,9 +51,11 @@ public class ProductServiceImpl implements ProductService {
 
     @Override
     @Transactional
-    public void createProduct(Product product) {
+    public Product createProduct(Product product) {
+        //product.setProductId(new DefaultKeyGenerator().generateKey().longValue());
         productMapper.insert(product);
         createEventLog(ProductCreateEventEnum.create_product, ProductCreateEventEnum.none, EventEnum.create_product_event);
+        return product;
     }
 
     @Override

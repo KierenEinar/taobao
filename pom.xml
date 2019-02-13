@@ -29,7 +29,7 @@
     <rocketmq.client.version>4.3.2</rocketmq.client.version>
     <junit.version>4.12</junit.version>
     <apollo.version>1.0.0</apollo.version>
-    <sharding-sphere.version>3.0.0.M1</sharding-sphere.version>
+    <sharding-sphere.version>3.1.0</sharding-sphere.version>
     <spring-data-hadoop.version>2.5.0.RELEASE</spring-data-hadoop.version>
     <hbase-client.version>1.4.9</hbase-client.version>
     <jdk.version>1.8</jdk.version>
