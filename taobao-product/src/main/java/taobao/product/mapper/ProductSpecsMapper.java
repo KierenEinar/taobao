@@ -1,12 +1,9 @@
 package taobao.product.mapper;
 
-import org.apache.ibatis.annotations.Delete;
-import org.apache.ibatis.annotations.Insert;
-import org.apache.ibatis.annotations.ResultMap;
-import org.apache.ibatis.annotations.Select;
-import org.apache.ibatis.annotations.SelectKey;
-import org.apache.ibatis.annotations.Update;
+import org.apache.ibatis.annotations.*;
 import taobao.product.models.ProductSpecs;
+
+import java.util.List;
 
 public interface ProductSpecsMapper {
     @Delete({
@@ -46,4 +43,6 @@ public interface ProductSpecsMapper {
         "where id = #{id,jdbcType=BIGINT}"
     })
     int updateByPrimaryKey(ProductSpecs record);
+
+    int insertBatch(@Param("list") List<ProductSpecs> productSpecsList);
 }

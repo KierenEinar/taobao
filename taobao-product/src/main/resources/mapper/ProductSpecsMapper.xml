@@ -63,4 +63,11 @@
     </set>
     where id = #{id,jdbcType=BIGINT}
   </update>
+
+  <insert id="insertBatch">
+    insert into product_specs (product_id, attrs, stock, price) values
+    <foreach collection="list" separator="," item="item">
+      (#{item.productId}, #{item.attrs}, #{item.stock}, #{item.price})
+    </foreach>
+  </insert>
 </mapper>

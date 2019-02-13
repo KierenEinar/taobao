@@ -1,23 +1,27 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
-<mapper namespace="taobao.product.mapper.ProductSpecsAttributeKeyMapper">
-  <resultMap id="BaseResultMap" type="taobao.product.models.ProductSpecsAttributeKey">
+<mapper namespace="taobao.product.mapper.ProductSpecsAttributeValueMapper">
+  <resultMap id="BaseResultMap" type="taobao.product.models.ProductSpecsAttributeValue">
     <id column="id" jdbcType="BIGINT" property="id" />
-    <result column="name" jdbcType="VARCHAR" property="name" />
+    <result column="value" jdbcType="VARCHAR" property="value" />
+    <result column="attr_id" jdbcType="BIGINT" property="attrId" />
     <result column="product_id" jdbcType="BIGINT" property="productId" />
     <result column="create_time" jdbcType="TIMESTAMP" property="createTime" />
   </resultMap>
   <sql id="Base_Column_List">
-    id, name, product_id, create_time
+    id, value, attr_id, product_id, create_time
   </sql>
-  <insert id="insertSelective" parameterType="taobao.product.models.ProductSpecsAttributeKey">
+  <insert id="insertSelective" parameterType="taobao.product.models.ProductSpecsAttributeValue">
     <selectKey keyProperty="id" order="AFTER" resultType="java.lang.Long">
       SELECT LAST_INSERT_ID()
     </selectKey>
-    insert into product_specs_attribute_key
+    insert into product_specs_attribute_value
     <trim prefix="(" suffix=")" suffixOverrides=",">
-      <if test="name != null">
-        name,
+      <if test="value != null">
+        value,
+      </if>
+      <if test="attrId != null">
+        attr_id,
       </if>
       <if test="productId != null">
         product_id,
@@ -27,8 +31,11 @@
       </if>
     </trim>
     <trim prefix="values (" suffix=")" suffixOverrides=",">
-      <if test="name != null">
-        #{name,jdbcType=VARCHAR},
+      <if test="value != null">
+        #{value,jdbcType=VARCHAR},
+      </if>
+      <if test="attrId != null">
+        #{attrId,jdbcType=BIGINT},
       </if>
       <if test="productId != null">
         #{productId,jdbcType=BIGINT},
@@ -38,11 +45,14 @@
       </if>
     </trim>
   </insert>
-  <update id="updateByPrimaryKeySelective" parameterType="taobao.product.models.ProductSpecsAttributeKey">
-    update product_specs_attribute_key
+  <update id="updateByPrimaryKeySelective" parameterType="taobao.product.models.ProductSpecsAttributeValue">
+    update product_specs_attribute_value
     <set>
-      <if test="name != null">
-        name = #{name,jdbcType=VARCHAR},
+      <if test="value != null">
+        value = #{value,jdbcType=VARCHAR},
+      </if>
+      <if test="attrId != null">
+        attr_id = #{attrId,jdbcType=BIGINT},
       </if>
       <if test="productId != null">
         product_id = #{productId,jdbcType=BIGINT},
@@ -55,9 +65,9 @@
   </update>
 
   <insert id="insertBatch">
-    insert into product_specs_attribute_key (id, product_id, name) values
-    <foreach collection="list" item="item" separator=",">
-      (#{item.id}, #{item.productId}, #{item.name})
+    insert into product_specs_attribute_value (value, attr_id, product_id) values
+    <foreach collection="list" item="item" separator="," >
+      (#{item.value}, #{item.attrId}, #{item.productId})
     </foreach>
   </insert>
 </mapper>

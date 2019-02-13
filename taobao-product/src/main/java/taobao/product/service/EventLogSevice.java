@@ -1,4 +1,7 @@
 package taobao.product.service;
 
-public class EventLogSevice {
+import taobao.product.models.EventLog;
+
+public interface EventLogSevice {
+    void create (EventLog eventLog);
 }

@@ -1,4 +1,5 @@
 package taobao.product.constant;
 
-public class EventEnum {
+public enum  EventEnum {
+    create_product_event
 }

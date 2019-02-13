@@ -10,6 +10,10 @@ public class APIResponse<T> {
         this.data = data;
     }
 
+    public APIResponse (T data) {
+        this(200, data);
+    }
+
     public Integer getCode() {
         return code;
     }
