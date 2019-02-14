@@ -1,9 +1,12 @@
 package taobao.product.mapper;
 
 import org.apache.ibatis.annotations.*;
+import taobao.product.dto.IdNameObject;
+import taobao.product.dto.ProductSpecsAttrDto;
 import taobao.product.models.ProductSpecsAttributeKey;
 
 import java.util.Collection;
+import java.util.List;
 
 public interface ProductSpecsAttributeKeyMapper {
     @Delete({
@@ -44,4 +47,9 @@ public interface ProductSpecsAttributeKeyMapper {
     int updateByPrimaryKey(ProductSpecsAttributeKey record);
 
     int insertBatch(@Param("list") Collection<ProductSpecsAttributeKey> keys);
+
+    @Select("select id, name from product_specs_attribute_key where product_id = #{0}")
+    List<IdNameObject> selectAttrsByProductId(Long productId);
+
+
 }

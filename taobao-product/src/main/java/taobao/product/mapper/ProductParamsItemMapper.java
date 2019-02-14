@@ -7,6 +7,7 @@ import org.apache.ibatis.annotations.Select;
 import org.apache.ibatis.annotations.SelectKey;
 import org.apache.ibatis.annotations.Update;
 import taobao.product.models.ProductParamsItem;
+import taobao.product.models.ProductSpecs;
 
 import java.util.List;
 
@@ -65,4 +66,7 @@ public interface ProductParamsItemMapper {
     int updateByPrimaryKey(ProductParamsItem record);
 
     int insertBatch(List<ProductParamsItem> items);
+
+    @Select("select id, product_id, product_specs_id, type, create_time, update_time, param_data from product_params_item where product_id = #{arg0};")
+    List<ProductParamsItem> selectByProductId(Long productId);
 }

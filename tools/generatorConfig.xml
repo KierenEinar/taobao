@@ -17,7 +17,7 @@
 
         <javaClientGenerator targetPackage="taobao.product.mapper" targetProject="../taobao-product/src/main/java" type="MIXEDMAPPER" />
 
-		<table tableName="product_specs_attribute_value" domainObjectName="ProductSpecsAttributeValue"
+		<table tableName="product" domainObjectName="Product"
                enableSelectByExample="false"
                enableDeleteByExample="false"
                enableCountByExample= "false"

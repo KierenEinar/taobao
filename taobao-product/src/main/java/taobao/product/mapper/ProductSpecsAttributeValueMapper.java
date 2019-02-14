@@ -1,6 +1,8 @@
 package taobao.product.mapper;
 
 import org.apache.ibatis.annotations.*;
+import taobao.product.dto.IdNameObject;
+import taobao.product.dto.ProductSpecsAttrDto;
 import taobao.product.models.ProductSpecsAttributeKey;
 import taobao.product.models.ProductSpecsAttributeValue;
 
@@ -45,5 +47,12 @@ public interface ProductSpecsAttributeValueMapper {
     })
     int updateByPrimaryKey(ProductSpecsAttributeValue record);
 
-    int insertBatch(@Param("list") List<ProductSpecsAttributeKey> keys);
+    int insertBatch(@Param("list") List<ProductSpecsAttributeValue> values);
+
+    @Select("select * from product_specs_attribute_value where product_id = #{arg0};")
+    List<ProductSpecsAttributeValue> selectByProductId(Long productId);
+
+    @Select("select b.attr_id as id, b.value as name from product_specs_attribute_value b where product_id = #{arg0};")
+    List<IdNameObject> selectAttrsByProductId(Long productId);
+
 }

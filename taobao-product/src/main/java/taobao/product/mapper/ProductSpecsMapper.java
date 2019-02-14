@@ -45,4 +45,7 @@ public interface ProductSpecsMapper {
     int updateByPrimaryKey(ProductSpecs record);
 
     int insertBatch(@Param("list") List<ProductSpecs> productSpecsList);
+
+    @Select("select * from product_specs where product_id = #{arg0};")
+    List<ProductSpecs> selectByProductId(Long productId);
 }

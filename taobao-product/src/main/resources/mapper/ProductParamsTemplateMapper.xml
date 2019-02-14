@@ -9,7 +9,7 @@
     <result column="update_time" jdbcType="TIMESTAMP" property="updateTime" />
   </resultMap>
   <resultMap extends="BaseResultMap" id="ResultMapWithBLOBs" type="taobao.product.models.ProductParamsTemplate">
-    <result column="template_json" jdbcType="LONGVARCHAR" property="templateJson" />
+    <result column="template_json" jdbcType="VARCHAR" property="templateJson" />
   </resultMap>
   <sql id="Base_Column_List">
     id, product_id, type, create_time, update_time
@@ -53,7 +53,7 @@
         #{updateTime,jdbcType=TIMESTAMP},
       </if>
       <if test="templateJson != null">
-        #{templateJson,jdbcType=LONGVARCHAR},
+        #{templateJson,jdbcType=VARCHAR},
       </if>
     </trim>
   </insert>
@@ -73,7 +73,7 @@
         update_time = #{updateTime,jdbcType=TIMESTAMP},
       </if>
       <if test="templateJson != null">
-        template_json = #{templateJson,jdbcType=LONGVARCHAR},
+        template_json = #{templateJson,jdbcType=VARCHAR},
       </if>
     </set>
     where id = #{id,jdbcType=BIGINT}

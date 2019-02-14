@@ -1,6 +1,6 @@
 package taobao.product.constant;
 
 public enum ProductParamsEnum {
-    infos,
+    info,
     params
 }

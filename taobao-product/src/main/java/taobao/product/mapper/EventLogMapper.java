@@ -55,6 +55,6 @@ public interface EventLogMapper {
             "on duplicate key update version = version + 1, status = #{status}, pre_status = #{preStatus}")
     int upsert(EventLog eventLog);
 
-    @Update("update event_log set status = #{2}, version = version + 1 where product_id = #{0} and status = #{1};")
+    @Update("update event_log set status = #{arg2}, version = version + 1 where product_id = #{arg0} and status = #{arg1};")
     int updateStatusByProductIdAndPreStatus(Long productId, ProductCreateEventEnum preStatus, ProductCreateEventEnum status);
 }

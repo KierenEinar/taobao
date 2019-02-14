@@ -1,11 +1,12 @@
 package taobao.product.vo;
+import java.util.List;
 import java.util.Map;
 public class ProductParamsCreateVo {
 
     private Long productSpecsId;
     private Long productId;
     private String type;
-    private Params params;
+    private List<Params> params;
 
     public Long getProductSpecsId() {
         return productSpecsId;
@@ -23,11 +24,11 @@ public class ProductParamsCreateVo {
         this.type = type;
     }
 
-    public Params getParams() {
+    public List<Params> getParams() {
         return params;
     }
 
-    public void setParams(Params params) {
+    public void setParams(List<Params> params) {
         this.params = params;
     }
 
@@ -42,7 +43,7 @@ public class ProductParamsCreateVo {
     public static class Params {
 
         private String group;
-        private Map<String, String> params;
+        private Map<String, String> param;
 
         public String getGroup() {
             return group;
@@ -52,12 +53,12 @@ public class ProductParamsCreateVo {
             this.group = group;
         }
 
-        public Map<String, String> getParams() {
-            return params;
+        public Map<String, String> getParam() {
+            return param;
         }
 
-        public void setParams(Map<String, String> params) {
-            this.params = params;
+        public void setParam(Map<String, String> param) {
+            this.param = param;
         }
     }
 }

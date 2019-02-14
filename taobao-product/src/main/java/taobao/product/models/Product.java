@@ -13,6 +13,8 @@ public class Product {
 
     private Date updateTime;
 
+    private String status;
+
     private String html;
 
     public Long getProductId() {
@@ -53,6 +55,14 @@ public class Product {
 
     public void setUpdateTime(Date updateTime) {
         this.updateTime = updateTime;
+    }
+
+    public String getStatus() {
+        return status;
+    }
+
+    public void setStatus(String status) {
+        this.status = status == null ? null : status.trim();
     }
 
     public String getHtml() {

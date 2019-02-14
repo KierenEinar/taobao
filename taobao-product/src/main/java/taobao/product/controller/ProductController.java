@@ -2,10 +2,7 @@ package taobao.product.controller;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import taobao.core.model.APIResponse;
 import taobao.product.models.Product;
 import taobao.product.service.ProductService;
@@ -23,8 +20,7 @@ public class ProductController {
 
     @RequestMapping(value = "", method = RequestMethod.POST)
     public ResponseEntity<?> createProduct (@RequestBody Product product) {
-        productService.createProduct(product);
-        return ResponseEntity.ok(new APIResponse<String>("success"));
+        return ResponseEntity.ok(new APIResponse<>(productService.createProduct(product)));
     }
 
     @RequestMapping(value = "/attrs", method = RequestMethod.POST)
@@ -42,6 +38,17 @@ public class ProductController {
     public ResponseEntity<?> createProdouctParamsItems (@RequestBody List<ProductParamsCreateVo> productParamsCreateVo) {
         productService.createProdouctParamsItems(productParamsCreateVo);
         return ResponseEntity.ok(new APIResponse<String>("success"));
+    }
+
+    @RequestMapping(value = "/release/{id}", method = RequestMethod.PUT)
+    public ResponseEntity<?> release (@PathVariable Long id) {
+        productService.releaseProduct(id);
+        return ResponseEntity.ok(new APIResponse<String>("success"));
+    }
+
+    @RequestMapping(value = "/{id}", method = RequestMethod.GET)
+    public ResponseEntity<?> findDetail (@PathVariable Long id) {
+        return ResponseEntity.ok(new APIResponse<>(productService.findProductDetail(id)));
     }
 
 }

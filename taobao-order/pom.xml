@@ -33,6 +33,7 @@
     <dependency>
       <groupId>io.shardingsphere</groupId>
       <artifactId>sharding-jdbc</artifactId>
+      <type>pom</type>
     </dependency>
 
     <dependency>

@@ -90,10 +90,10 @@
   </update>
 
   <insert id="insertBatch">
-    insert into  product_params_item(id, product_id, product_specs_id, type)
+    insert into  product_params_item(id, product_id, product_specs_id, type, param_data)
     values
     <foreach collection="list" item="item" separator=",">
-      (#{item.id}, #{item.productId}, #{item.productSpecsId}, item.type)
+      (#{item.id}, #{item.productId}, #{item.productSpecsId}, #{item.type}, #{item.paramData})
     </foreach>
   </insert>
 </mapper>

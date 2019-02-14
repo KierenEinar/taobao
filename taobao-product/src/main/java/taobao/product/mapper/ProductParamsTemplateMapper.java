@@ -21,7 +21,7 @@ public interface ProductParamsTemplateMapper {
         "template_json)",
         "values (#{productId,jdbcType=BIGINT}, #{type,jdbcType=CHAR}, ",
         "#{createTime,jdbcType=TIMESTAMP}, #{updateTime,jdbcType=TIMESTAMP}, ",
-        "#{templateJson,jdbcType=LONGVARCHAR})"
+        "#{templateJson,jdbcType=VARCHAR})"
     })
     @SelectKey(statement="SELECT LAST_INSERT_ID()", keyProperty="id", before=false, resultType=Long.class)
     int insert(ProductParamsTemplate record);
@@ -45,7 +45,7 @@ public interface ProductParamsTemplateMapper {
           "type = #{type,jdbcType=CHAR},",
           "create_time = #{createTime,jdbcType=TIMESTAMP},",
           "update_time = #{updateTime,jdbcType=TIMESTAMP},",
-          "template_json = #{templateJson,jdbcType=LONGVARCHAR}",
+          "template_json = #{templateJson,jdbcType=VARCHAR}",
         "where id = #{id,jdbcType=BIGINT}"
     })
     int updateByPrimaryKeyWithBLOBs(ProductParamsTemplate record);

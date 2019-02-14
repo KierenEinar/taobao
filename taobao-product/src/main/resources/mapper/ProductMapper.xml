@@ -7,12 +7,13 @@
     <result column="title" jdbcType="VARCHAR" property="title" />
     <result column="create_time" jdbcType="TIMESTAMP" property="createTime" />
     <result column="update_time" jdbcType="TIMESTAMP" property="updateTime" />
+    <result column="status" jdbcType="CHAR" property="status" />
   </resultMap>
   <resultMap extends="BaseResultMap" id="ResultMapWithBLOBs" type="taobao.product.models.Product">
     <result column="html" jdbcType="LONGVARCHAR" property="html" />
   </resultMap>
   <sql id="Base_Column_List">
-    product_id, name, title, create_time, update_time
+    product_id, name, title, create_time, update_time, status
   </sql>
   <sql id="Blob_Column_List">
     html
@@ -35,6 +36,9 @@
       <if test="updateTime != null">
         update_time,
       </if>
+      <if test="status != null">
+        status,
+      </if>
       <if test="html != null">
         html,
       </if>
@@ -54,6 +58,9 @@
       </if>
       <if test="updateTime != null">
         #{updateTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="status != null">
+        #{status,jdbcType=CHAR},
       </if>
       <if test="html != null">
         #{html,jdbcType=LONGVARCHAR},
@@ -75,10 +82,20 @@
       <if test="updateTime != null">
         update_time = #{updateTime,jdbcType=TIMESTAMP},
       </if>
+      <if test="status != null">
+        status = #{status,jdbcType=CHAR},
+      </if>
       <if test="html != null">
         html = #{html,jdbcType=LONGVARCHAR},
       </if>
     </set>
     where product_id = #{productId,jdbcType=BIGINT}
+  </update>
+
+  <update id="updateStatusByPreStatusAndProductId">
+    update product set status = #{status} where product_id = #{productId} and status in
+    <foreach collection="preStatus" separator="," item="item" open="(" close=")">
+      #{item}
+    </foreach>
   </update>
 </mapper>

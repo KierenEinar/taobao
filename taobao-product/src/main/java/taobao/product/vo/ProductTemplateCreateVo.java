@@ -6,7 +6,7 @@ public class ProductTemplateCreateVo {
 
     private Long productId;
     private String type;
-    private ProductTemplateVo template;
+    private List<ProductTemplateVo> template;
 
     public Long getProductId() {
         return productId;
@@ -16,11 +16,11 @@ public class ProductTemplateCreateVo {
         this.productId = productId;
     }
 
-    public ProductTemplateVo getTemplate() {
+    public List<ProductTemplateVo> getTemplate() {
         return template;
     }
 
-    public void setTemplate(ProductTemplateVo template) {
+    public void setTemplate(List<ProductTemplateVo> template) {
         this.template = template;
     }
 

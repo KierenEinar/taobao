@@ -5,5 +5,6 @@ public enum ProductCreateEventEnum {
     create_product,
     create_attrs,
     create_params,
-    create_infos
+    create_infos,
+    release
 }

@@ -3,15 +3,21 @@ package taobao.product.mapper;
 import io.shardingsphere.core.keygen.DefaultKeyGenerator;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.transaction.annotation.Transactional;
 import taobao.product.App;
+import taobao.product.dto.ProductDetailDto;
 import taobao.product.models.Product;
 import taobao.product.models.ProductSpecsAttributeKey;
+import taobao.product.service.ProductService;
+import taobao.product.vo.ProductDetailVo;
 
 import java.util.Date;
+import java.util.List;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @SpringBootTest(classes = App.class)
@@ -21,7 +27,15 @@ public class ProductMapperTest {
     ProductMapper productMapper;
 
     @Autowired
+    ProductService productService;
+
+    @Autowired
     ProductSpecsAttributeKeyMapper productSpecsAttributeKeyMapper;
+
+    @Autowired
+    ProductSpecsAttributeValueMapper productSpecsAttributeValueMapper;
+
+    Logger logger = LoggerFactory.getLogger(ProductMapperTest.class);
 
     @Test
     @Transactional
@@ -39,6 +53,17 @@ public class ProductMapperTest {
         productSpecsAttributeKey.setCreateTime(new Date());
         productSpecsAttributeKeyMapper.insert(productSpecsAttributeKey);
         int a = 0/0;
+    }
+
+    @Test
+    public void testJoin () {
+        List<ProductDetailDto> detailDtos = productMapper.selectProductsAttrKeyByProductId(302770275328458753L);
+        logger.info("{}", detailDtos);
+    }
+
+    @Test
+    public void testFindDetail () {
+        productService.findProductDetail(302770275328458753L);
     }
 
 }
