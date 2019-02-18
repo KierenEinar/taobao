@@ -13,17 +13,21 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Import;
 import org.springframework.core.annotation.Order;
 import org.springframework.data.hadoop.hbase.HbaseTemplate;
 import taobao.hbase.config.HbaseClientConfig;
 import taobao.hbase.data.HbaseRepository;
 import taobao.hbase.data.impl.SimpleHbaseRepositoryProxy;
+import taobao.hbase.service.HbaseService;
+import taobao.hbase.service.impl.HbaseServiceImpl;
 
 import java.io.IOException;
 
 @Configuration
 @ConditionalOnProperty(prefix = "hbase.orm", value = "enabled", havingValue = "true")
 @ConditionalOnClass(HbaseRepository.class)
+@Import(HbaseServiceImpl.class)
 public class HbaseAutoConfigure {
 
     @Value("${hbase.zookeeper.servers}")

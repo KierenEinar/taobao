@@ -79,6 +79,11 @@
       <artifactId>mysql-connector-java</artifactId>
     </dependency>
 
+    <dependency>
+      <groupId>com.alibaba</groupId>
+      <artifactId>fastjson</artifactId>
+    </dependency>
+
     <!--<dependency>-->
       <!--<groupId>io.shardingsphere</groupId>-->
       <!--<artifactId>sharding-jdbc</artifactId>-->

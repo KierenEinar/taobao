@@ -66,4 +66,15 @@ public class ProductMapperTest {
         productService.findProductDetail(302770275328458753L);
     }
 
+    @Test
+    public void testCreateProduct2Hbase () {
+        productService.createProduct2Hbase(302770275328458753L);
+    }
+
+    @Test
+    public void testFindProductFromHbase() {
+        productService.findProductDetailFromHbase(302770275328458753L);
+    }
+
+
 }

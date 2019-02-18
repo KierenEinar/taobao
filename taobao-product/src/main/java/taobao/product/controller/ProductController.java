@@ -51,4 +51,10 @@ public class ProductController {
         return ResponseEntity.ok(new APIResponse<>(productService.findProductDetail(id)));
     }
 
+
+    @RequestMapping(value = "/hbase/{id}", method = RequestMethod.GET)
+    public ResponseEntity<?> findDetailFromHbase (@PathVariable Long id) {
+        return ResponseEntity.ok(new APIResponse<>(productService.findProductDetailFromHbase(id)));
+    }
+
 }

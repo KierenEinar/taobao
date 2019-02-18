@@ -3,17 +3,22 @@ package taobao.product.service.impl;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
 import io.shardingsphere.core.keygen.DefaultKeyGenerator;
 import io.shardingsphere.core.keygen.KeyGenerator;
+import org.apache.hadoop.hbase.client.Put;
+import org.apache.hadoop.hbase.util.Bytes;
+import org.apache.rocketmq.client.producer.SendCallback;
+import org.apache.rocketmq.client.producer.SendResult;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
-import taobao.product.constant.EventEnum;
-import taobao.product.constant.ProductCreateEventEnum;
-import taobao.product.constant.ProductParamsEnum;
-import taobao.product.constant.ProductStatusEnum;
+import taobao.hbase.service.HbaseService;
+import taobao.product.constant.*;
 import taobao.product.dto.IdNameObject;
 import taobao.product.exception.ProductEventException;
 import taobao.product.mapper.*;
@@ -21,11 +26,13 @@ import taobao.product.models.*;
 import taobao.product.service.EventLogSevice;
 import taobao.product.service.ProductService;
 import taobao.product.vo.*;
+import taobao.rocketmq.core.RocketMQTemplate;
 
 import javax.annotation.Resource;
+import java.lang.reflect.Field;
+import java.math.BigDecimal;
 import java.util.*;
 import java.util.stream.Collectors;
-
 @Service
 public class ProductServiceImpl implements ProductService {
 
@@ -55,6 +62,14 @@ public class ProductServiceImpl implements ProductService {
 
     @Resource(name = "DefaultKeyGenerator")
     KeyGenerator defaultKeyGenerator;
+
+    @Autowired
+    RocketMQTemplate rocketMQTemplate;
+
+    @Autowired
+    HbaseService hbaseService;
+
+    Logger logger = LoggerFactory.getLogger(ProductServiceImpl.class);
 
     @Override
     @Transactional
@@ -120,12 +135,23 @@ public class ProductServiceImpl implements ProductService {
     @Override
     @Transactional
     public void releaseProduct(Long productId) {
-        if (ProductStatusEnum.creating.name().equals(productMapper.selectByPrimaryKey(productId).getStatus())) {
-            updateEventLog(ProductCreateEventEnum.release, ProductCreateEventEnum.create_infos, productId);
-        }
-
+        String status =  productMapper.selectByPrimaryKey(productId).getStatus();
         int result = productMapper.updateStatusByPreStatusAndProductId(Arrays.asList(ProductStatusEnum.creating.name(), ProductStatusEnum.updating.name()), ProductStatusEnum.sale.name(), productId);
         if (result == 0) throw new ProductEventException("非法请求");
+        if (ProductStatusEnum.creating.name().equals(status)) {
+            updateEventLog(ProductCreateEventEnum.release, ProductCreateEventEnum.create_infos, productId);
+            rocketMQTemplate.sendAsync(Constant.product_create_topic, productId, new SendCallback() {
+                @Override
+                public void onSuccess(SendResult sendResult) {
+                    logger.info("发送消息队列-创建商品-hbase成功, {}", sendResult);
+                }
+
+                @Override
+                public void onException(Throwable e) {
+                    logger.info("发送消息队列-创建商品-hbase失败, {}", e);
+                }
+            });
+        }
     }
 
     private String sortAttrs (String attrs) {
@@ -236,6 +262,138 @@ public class ProductServiceImpl implements ProductService {
 
         return productDetailVo;
     }
+
+    @Override
+    public void createProduct2Hbase(Long productId) {
+        ProductDetailVo productDetailVo = findProductDetail(productId);
+        String table = HbaseConstant.Product.table;
+        String rowKey = productId + "";
+        List<Put> puts = Lists.newArrayList();
+        puts.addAll(ColumnFamilyInfoPuts(rowKey, productDetailVo));
+        puts.addAll(ColumnFamilyAttrPuts(rowKey, productDetailVo));
+        puts.addAll(ColumnFamilySpecsPuts(rowKey, productDetailVo));
+        hbaseService.put(table, rowKey, puts);
+    }
+
+    @Override
+    public ProductDetailVo findProductDetailFromHbase(Long productId) {
+
+        Map<String, Map<String, String>> map = hbaseService.get(HbaseConstant.Product.table, productId + "");
+
+        Map<String, String> specsMap =  map.get(HbaseConstant.Product.specs);
+
+        Map<String,Map<String,String>> mapList = Maps.newConcurrentMap();
+
+        for (Map.Entry<String,String> entry : specsMap.entrySet()) {
+            String k[] = entry.getKey().split("-");
+            String group = k[k.length - 1];
+            String key = entry.getKey().substring(0, entry.getKey().lastIndexOf("-") );
+            if (!mapList.containsKey(group)) mapList.put(group, Maps.newConcurrentMap());
+            Map<String,String> list = mapList.get(group);
+            list.put(key, entry.getValue());
+        }
+
+        ProductDetailVo productDetailVo = new ProductDetailVo();
+        Map<String, String> info = map.get(HbaseConstant.Product.Info);
+        Map<String, String> attrs = map.get(HbaseConstant.Product.attrs);
+
+        Product product = new Product();
+        product.setProductId(productId);
+        product.setTitle(info.get(HbaseConstant.Product.CFInfo.title));
+        product.setHtml(info.get(HbaseConstant.Product.CFInfo.html));
+        product.setName(info.get(HbaseConstant.Product.CFInfo.name));
+        productDetailVo.setProduct(product);
+
+        List<ProductDetailVo.AttrValuePair> attrsList = Lists.newArrayList();
+        productDetailVo.setAttrs(attrsList);
+        for (Map.Entry<String,String> entry: attrs.entrySet()) {
+            String key = entry.getKey();
+            ProductDetailVo.AttrValuePair pair = new ProductDetailVo.AttrValuePair();
+            pair.setKey(key);
+            pair.setValue(Arrays.asList(entry.getValue().split(",")));
+            attrsList.add(pair);
+        }
+
+        List<ProductDetailVo.Specs> specsList = Lists.newArrayList();
+
+        productDetailVo.setSpecs(specsList);
+
+        for (Map.Entry<String,Map<String,String>> entry : mapList.entrySet()) {
+            Map<String,String> v = entry.getValue();
+            ProductDetailVo.Specs specs = new ProductDetailVo.Specs();
+            specs.setPrice(new BigDecimal(v.get(HbaseConstant.Product.CFSpecs.price)));
+            specs.setAttrs(v.get(HbaseConstant.Product.CFSpecs.attrs));
+            specs.setId(Long.parseLong(entry.getKey()));
+            Map<String, Object> infoMap = Maps.newConcurrentMap();
+            infoMap.put("info", JSONObject.parse(v.get("info")));
+            infoMap.put("params", JSONObject.parse(v.get("params")));
+            specs.setKv(infoMap);
+            specsList.add(specs);
+        }
+
+        return productDetailVo;
+    }
+
+    private List<Put> ColumnFamilyInfoPuts (String rowKey ,ProductDetailVo productDetailVo) {
+
+        String columnFamily = HbaseConstant.Product.Info;
+        Product product = productDetailVo.getProduct();
+        byte[] cf = Bytes.toBytes(columnFamily);
+        Put put1 = new Put(Bytes.toBytes(rowKey));
+        put1.addColumn(cf, Bytes.toBytes(HbaseConstant.Product.CFInfo.title), Bytes.toBytes(product.getTitle()));
+
+        Put put2 = new Put(Bytes.toBytes(rowKey));
+        put2.addColumn(cf, Bytes.toBytes(HbaseConstant.Product.CFInfo.name), Bytes.toBytes(product.getName()));
+
+        Put put3 = new Put(Bytes.toBytes(rowKey));
+        put3.addColumn(cf, Bytes.toBytes(HbaseConstant.Product.CFInfo.html), Bytes.toBytes(product.getHtml()));
+
+        return Lists.newArrayList(put1, put2, put3);
+    }
+
+    private List<Put> ColumnFamilyAttrPuts (String rowKey ,ProductDetailVo productDetailVo) {
+        String columnFamily = HbaseConstant.Product.attrs;
+        List<ProductDetailVo.AttrValuePair> attrs = productDetailVo.getAttrs();
+        byte[] row = Bytes.toBytes(rowKey);
+        return attrs.stream().map(attr->{
+            byte[] attrKey = Bytes.toBytes(attr.getKey());
+            byte[] attrValue = Bytes.toBytes(attr.getValue().stream().collect(Collectors.joining(",")));
+            Put put = new Put(row);
+            put.addColumn(Bytes.toBytes(columnFamily) ,attrKey, attrValue);
+            return put;
+        }).collect(Collectors.toList());
+    }
+
+    private List<Put> ColumnFamilySpecsPuts (String rowKey, ProductDetailVo productDetailVo) {
+
+        List<ProductDetailVo.Specs> specsList = productDetailVo.getSpecs();
+        byte[] row = Bytes.toBytes(rowKey);
+        List<Put> puts = Lists.newArrayList();
+        for (ProductDetailVo.Specs specs : specsList) {
+
+            String columnFamily = HbaseConstant.Product.specs;
+            Put put1 = new Put(row);
+            put1.addColumn(Bytes.toBytes(columnFamily), Bytes.toBytes(HbaseConstant.Product.CFSpecs.attrs+ "-" + specs.getId()), Bytes.toBytes(specs.getAttrs()));
+
+            Put put2 = new Put(row);
+            put2.addColumn(Bytes.toBytes(columnFamily), Bytes.toBytes(HbaseConstant.Product.CFSpecs.price+ "-" + specs.getId()), Bytes.toBytes(specs.getPrice()+""));
+
+            puts.add(put1);
+            puts.add(put2);
+            Map<String, Object> kv = specs.getKv();
+
+            for (Map.Entry<String, Object> entry : kv.entrySet()) {
+                Put put4 = new Put(row);
+                put4.addColumn(Bytes.toBytes(columnFamily), Bytes.toBytes(entry.getKey()+ "-" + specs.getId()), Bytes.toBytes(JSONObject.toJSONString(entry.getValue())));
+                puts.add(put4);
+            }
+
+        }
+
+        return puts;
+
+    }
+
 
 
 }

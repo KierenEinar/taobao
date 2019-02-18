@@ -20,4 +20,7 @@ public interface ProductService {
     void createEventLog(ProductCreateEventEnum status, ProductCreateEventEnum preStatus, EventEnum eventEnum,Long productId);
     void updateEventLog(ProductCreateEventEnum status, ProductCreateEventEnum preStatus, Long productId);
     ProductDetailVo findProductDetail(Long productId);
+    void createProduct2Hbase(Long productId);
+    ProductDetailVo findProductDetailFromHbase(Long productId);
+
 }
