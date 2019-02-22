@@ -305,6 +305,7 @@ public class DefaultRocketMQListenerContainer implements RocketMQListenerContain
                     logger.info("consume {}", messageExt.getMsgId());
                 }catch (Exception e) {
                     logger.error("consume message failed. messageExt : {}", messageExt);
+                    e.printStackTrace();
                     context.setSuspendCurrentQueueTimeMillis(1000);
                     return ConsumeOrderlyStatus.SUSPEND_CURRENT_QUEUE_A_MOMENT;
                 }

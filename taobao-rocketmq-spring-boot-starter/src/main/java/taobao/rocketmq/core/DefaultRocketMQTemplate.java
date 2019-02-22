@@ -246,7 +246,7 @@ public class DefaultRocketMQTemplate extends AbstractMessageSendingTemplate<Stri
     }
 
     @Override
-    public TransactionSendResult sendMessageInTransaction(String groupName, String destination, String payload, Object args) {
+    public TransactionSendResult sendMessageInTransaction(String groupName, String destination, Object payload, Object args) {
        Message<?> message = this.doConvert(payload, null, null);
        return sendMessageInTransaction(groupName, destination, message, args);
     }

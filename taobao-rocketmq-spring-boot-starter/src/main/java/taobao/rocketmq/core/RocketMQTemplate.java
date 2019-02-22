@@ -61,7 +61,7 @@ public interface RocketMQTemplate extends InitializingBean, DisposableBean, Mess
 
     TransactionSendResult sendMessageInTransaction(String groupName, String destination, Message message, Object args);
 
-    TransactionSendResult sendMessageInTransaction(String groupName, String destination, String payload, Object args);
+    TransactionSendResult sendMessageInTransaction(String groupName, String destination, Object payload, Object args);
 
 
 }
