@@ -4,6 +4,7 @@ import org.springframework.aop.support.AopUtils;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.SmartInitializingSingleton;
 import org.springframework.boot.autoconfigure.AutoConfigureAfter;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.context.annotation.Configuration;
@@ -18,17 +19,21 @@ import taobao.localmq.core.LocalQueueContainer;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executor;
+import java.util.concurrent.ThreadPoolExecutor;
 
 @Configuration
-@AutoConfigureAfter(ThreadPoolTaskExecutor.class)
-@Import(ThreadPoolTaskExecutor.class)
+@ConditionalOnClass(ThreadPoolTaskExecutor.class)
 public class LocalMQListenerContainerConfigure implements ApplicationContextAware, SmartInitializingSingleton {
 
     ApplicationContext applicationContext;
 
     Map<String, Integer> containerNameCapacityMap = new ConcurrentHashMap<>();
 
-    Executor executor;
+    ThreadPoolTaskExecutor threadPoolExecutor;
+
+    public LocalMQListenerContainerConfigure (ThreadPoolTaskExecutor threadPoolExecutor) {
+        this.threadPoolExecutor = threadPoolExecutor;
+    }
 
     @Override
     public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
@@ -68,7 +73,7 @@ public class LocalMQListenerContainerConfigure implements ApplicationContextAwar
 
     private LocalQueueContainer createLocalQueueContainer (Object bean, LocalMQMessageListener localMQMessageListener) {
         LocalQueueContainer localQueueContainer = new LocalQueueContainer();
-        localQueueContainer.setExecutor(executor);
+        localQueueContainer.setExecutor(threadPoolExecutor);
         localQueueContainer.setLocalMQListener((LocalMQListener<?>) bean);
         localQueueContainer.setLocalMQMessageListener(localMQMessageListener);
         return localQueueContainer;

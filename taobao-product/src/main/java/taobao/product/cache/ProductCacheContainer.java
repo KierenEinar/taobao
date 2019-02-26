@@ -13,7 +13,7 @@ import java.util.concurrent.ConcurrentHashMap;
 @Component
 public class ProductCacheContainer implements InitializingBean, DisposableBean {
 
-    public static Map<Integer, Map<Long, ProductDetailVo>> container = new ConcurrentHashMap<>();
+    public static Map<Long, Map<Long, ProductDetailVo>> container = new ConcurrentHashMap<>();
 
     public static final int CONTAINER_SIZE = 100;
 
@@ -21,7 +21,7 @@ public class ProductCacheContainer implements InitializingBean, DisposableBean {
 
     @Override
     public void afterPropertiesSet() throws Exception {
-        for (int i=0; i<CONTAINER_SIZE; i++) container.put(i ,new ConcurrentHashMap<>());
+        for (Long i=0L; i<CONTAINER_SIZE; i++) container.put(i ,new ConcurrentHashMap<>());
         logger.info("ProductCacheContainer init success ... " );
     }
 
@@ -35,8 +35,8 @@ public class ProductCacheContainer implements InitializingBean, DisposableBean {
     }
 
 
-    public Integer getKeyRange (Long productId) {
-        return productId.intValue() % CONTAINER_SIZE;
+    public long getKeyRange (Long productId) {
+        return productId % CONTAINER_SIZE;
     }
 
     public ProductDetailVo getProductCache (Long productId) {

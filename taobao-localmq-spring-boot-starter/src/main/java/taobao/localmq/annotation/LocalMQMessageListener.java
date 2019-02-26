@@ -13,5 +13,5 @@ import java.lang.annotation.*;
 public @interface LocalMQMessageListener {
     String  topic() default Constant.DEFAULT_TOPIC;
     int capacity() default Constant.DEFAULT_CAPACITY;
-    int maxPartition() default Constant.DEFAULT_CAPACITY;
+    int maxPartition() default Constant.DEFAULT_MAX_PARTITION;
 }

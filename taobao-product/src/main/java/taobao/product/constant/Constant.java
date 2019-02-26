@@ -14,6 +14,7 @@ public class Constant {
         String product_create_redis_transaction_topic = "product-create-redis-transaction-topic";
         String product_create_redis_topic = "product-create-redis-topic";
         String product_detail_cache_del_topic = "product-detail-cache-del-topic";
+        String product_create_local_cache_topic = "product-create-local-cache-topic";
     }
 
     public static class HashKey {

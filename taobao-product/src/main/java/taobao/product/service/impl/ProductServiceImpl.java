@@ -18,6 +18,9 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
 import taobao.core.RedisService;
 import taobao.hbase.service.HbaseService;
+import taobao.localmq.core.LocalMQSendCallback;
+import taobao.localmq.core.LocalMQTemplate;
+import taobao.product.cache.ProductCacheContainer;
 import taobao.product.constant.*;
 import taobao.product.dto.IdNameObject;
 import taobao.product.exception.ProductEventException;
@@ -78,6 +81,12 @@ public class ProductServiceImpl implements ProductService {
 
     @Autowired
     ProducerService producerService;
+
+    @Autowired
+    ProductCacheContainer productCacheContainer;
+
+    @Autowired
+    LocalMQTemplate localMQTemplate;
 
     Logger logger = LoggerFactory.getLogger(ProductServiceImpl.class);
 
@@ -277,12 +286,25 @@ public class ProductServiceImpl implements ProductService {
 
     @Override
     public ProductDetailVo findProductDetail(Long productId) {
+        ProductDetailVo productDetailVoCache = findProductDetailFromCache(productId);
+        if (Objects.nonNull(productDetailVoCache)) return productDetailVoCache;
         ProductDetailVo productDetailVo = findProductDetailFromRedis(productId);
         if (Objects.isNull(productDetailVo)) productDetailVo = sendProductCreate2RedisMessage(productId);
         logger.info("find product from redis -> {}", productDetailVo);
+        if (Objects.isNull(productDetailVoCache) && Objects.nonNull(productDetailVo)) {
+            localMQTemplate.sendAsync(Constant.Topic.product_create_local_cache_topic, productDetailVo, new LocalMQSendCallback() {
+                @Override
+                public void onSuccess(String msgId) {
+                    logger.info("send local mq success ... ");
+                }
+                @Override
+                public void onException(Exception e) {
+                    logger.error("send local mq error ... ");
+                }
+            });
+        }
         if (Objects.nonNull(productDetailVo)) return productDetailVo;
         return findProductDetailFromHbase(productId);
-        //return findProductDetailFromDB(productId);
     }
 
     @Override
@@ -400,7 +422,9 @@ public class ProductServiceImpl implements ProductService {
                 productDetailVo = findProductDetailFromCache(productId);
                 if (Objects.nonNull(productDetailVo)) return productDetailVo;
                 productDetailVo = findProductDetailFromRedis(productId);
-                if (Objects.nonNull(productDetailVo)) return productDetailVo;
+                if (Objects.nonNull(productDetailVo)) {
+                    return productDetailVo;
+                }
             }
             ++retryCount;
         }
@@ -408,7 +432,7 @@ public class ProductServiceImpl implements ProductService {
     }
 
     private ProductDetailVo findProductDetailFromCache(Long productId) {
-        return null;
+        return productCacheContainer.getProductCache(productId);
     }
 
     @Override

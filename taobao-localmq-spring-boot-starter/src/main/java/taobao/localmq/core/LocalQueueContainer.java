@@ -24,7 +24,7 @@ public class LocalQueueContainer implements SmartLifecycle, DisposableBean, Init
 
     int capacity;
 
-    Boolean running;
+    boolean running;
 
     Logger logger = LoggerFactory.getLogger(LocalQueueContainer.class);
 
@@ -70,8 +70,8 @@ public class LocalQueueContainer implements SmartLifecycle, DisposableBean, Init
 
     @Override
     public void destroy() throws Exception {
-        partitionQueue.clear();
         logger.info("LocalMQListenerContainer destroy ... ");
+        partitionQueue.clear();
     }
 
     @Override
@@ -92,7 +92,7 @@ public class LocalQueueContainer implements SmartLifecycle, DisposableBean, Init
 
     @Override
     public boolean isAutoStartup() {
-        return running;
+        return true;
     }
 
     @Override
@@ -103,26 +103,31 @@ public class LocalQueueContainer implements SmartLifecycle, DisposableBean, Init
 
     @Override
     public void start() {
-       this.running = Boolean.TRUE;
+       logger.info("LocalQueueContainer start, name -> {}", name);
        for (int i=0; i<this.maxPartition; i++) {
-            BlockingQueue blockingQueue = partitionQueue.get(i);
+            BlockingQueue<LocalQueueBody> blockingQueue = partitionQueue.get(i);
             executor.execute(()->{
                 while (true) {
+                    LocalMQSendCallback localMQSendCallback = null;
                     try {
-                        Object data = blockingQueue.take();
-                        localMQListener.onMessage(data);
+                        LocalQueueBody data = blockingQueue.take();
+                        localMQSendCallback = data.getLocalMQSendCallback();
+                        localMQSendCallback.onSuccess("");
+                        localMQListener.onMessage(data.getData());
                     } catch (InterruptedException e) {
                         e.printStackTrace();
+                        localMQSendCallback.onException(e);
                     }
                 }
             });
        }
+        this.running = Boolean.TRUE;
     }
 
     @Override
     public void stop() {
+        logger.info("LocalMQListenerContainer stop ... ");
         if (this.running) {
-            logger.info("LocalMQListenerContainer stop ... ");
             if (CollectionUtils.isEmpty(partitionQueue)) {
                 partitionQueue.forEach((k,v)->v.clear());
             }
@@ -137,7 +142,7 @@ public class LocalQueueContainer implements SmartLifecycle, DisposableBean, Init
 
     @Override
     public int getPhase() {
-        return 0;
+        return Integer.MAX_VALUE;
     }
 
 }
