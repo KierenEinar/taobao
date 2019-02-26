@@ -39,7 +39,7 @@ public class ProducerServiceImpl implements ProducerService {
 
     @Override
     public void sendCreateProdcut2CacheMessage(Long productId) {
-        rocketMQTemplate.sendAsync(Constant.Topic.product_create_cache_topic, productId, new SendCallbackImpl(productId));
+        rocketMQTemplate.sendAsync(Constant.Topic.product_create_redis_topic, productId, new SendCallbackImpl(productId));
     }
 
     @Override

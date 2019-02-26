@@ -79,9 +79,6 @@ public class ProductServiceImpl implements ProductService {
     @Autowired
     ProducerService producerService;
 
-    @Resource(name = "productDetailCache")
-    Map<Long, ProductDetailVo> productDetailCache;
-
     Logger logger = LoggerFactory.getLogger(ProductServiceImpl.class);
 
     private final static Lock redisProductLock = new ReentrantLock();
