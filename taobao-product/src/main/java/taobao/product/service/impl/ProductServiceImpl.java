@@ -6,10 +6,9 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import io.shardingsphere.core.keygen.DefaultKeyGenerator;
 import io.shardingsphere.core.keygen.KeyGenerator;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.hbase.client.Put;
 import org.apache.hadoop.hbase.util.Bytes;
-import org.apache.rocketmq.client.producer.SendCallback;
-import org.apache.rocketmq.client.producer.SendResult;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
@@ -17,6 +16,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
+import taobao.core.RedisService;
 import taobao.hbase.service.HbaseService;
 import taobao.product.constant.*;
 import taobao.product.dto.IdNameObject;
@@ -24,15 +24,19 @@ import taobao.product.exception.ProductEventException;
 import taobao.product.mapper.*;
 import taobao.product.models.*;
 import taobao.product.service.EventLogSevice;
+import taobao.product.service.ProducerService;
 import taobao.product.service.ProductService;
 import taobao.product.vo.*;
 import taobao.rocketmq.core.RocketMQTemplate;
 
 import javax.annotation.Resource;
-import java.lang.reflect.Field;
 import java.math.BigDecimal;
 import java.util.*;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 import java.util.stream.Collectors;
+
 @Service
 public class ProductServiceImpl implements ProductService {
 
@@ -69,7 +73,18 @@ public class ProductServiceImpl implements ProductService {
     @Autowired
     HbaseService hbaseService;
 
+    @Autowired
+    RedisService redisService;
+
+    @Autowired
+    ProducerService producerService;
+
+    @Resource(name = "productDetailCache")
+    Map<Long, ProductDetailVo> productDetailCache;
+
     Logger logger = LoggerFactory.getLogger(ProductServiceImpl.class);
+
+    private final static Lock redisProductLock = new ReentrantLock();
 
     @Override
     @Transactional
@@ -88,7 +103,7 @@ public class ProductServiceImpl implements ProductService {
         final Map<String, List<String>> attrs = productCreateAttrsStockWebVo.getAttrs();
         final Map<String, ProductSpecsAttributeKey> keyMap = new HashMap<>();
         KeyGenerator keyGenerator = new DefaultKeyGenerator();
-        List<ProductSpecsAttributeKey> keys = attrs.keySet().stream().map(i->{
+        List<ProductSpecsAttributeKey> keys = attrs.keySet().stream().map(i -> {
             ProductSpecsAttributeKey productSpecsAttributeKey = new ProductSpecsAttributeKey();
             productSpecsAttributeKey.setId(keyGenerator.generateKey().longValue());
             productSpecsAttributeKey.setName(i);
@@ -102,7 +117,7 @@ public class ProductServiceImpl implements ProductService {
 
         for (Map.Entry<String, List<String>> entrys : attrs.entrySet()) {
             Long attrId = keyMap.get(entrys.getKey()).getId();
-            for (String v: entrys.getValue()) {
+            for (String v : entrys.getValue()) {
                 ProductSpecsAttributeValue value = new ProductSpecsAttributeValue();
                 value.setProductId(productCreateAttrsStockWebVo.getProductId());
                 value.setAttrId(attrId);
@@ -114,7 +129,7 @@ public class ProductServiceImpl implements ProductService {
         productSpecsAttributeValueMapper.insertBatch(values);
 
         final List<ProductSkuVo> skus = productCreateAttrsStockWebVo.getSkus();
-        List<ProductSpecs> productSpecsList = skus.stream().map(sku->{
+        List<ProductSpecs> productSpecsList = skus.stream().map(sku -> {
             ProductSpecs productSpecs = new ProductSpecs();
             productSpecs.setId(defaultKeyGenerator.generateKey().longValue());
             productSpecs.setProductId(productCreateAttrsStockWebVo.getProductId());
@@ -135,26 +150,26 @@ public class ProductServiceImpl implements ProductService {
     @Override
     @Transactional
     public void releaseProduct(Long productId) {
-        String status =  productMapper.selectByPrimaryKey(productId).getStatus();
+        producerService.sendCreateProductMQInTransaction(productId);
+    }
+
+    @Override
+    @Transactional
+    public void releaseProduct2DB (Long productId) {
+        String status = productMapper.selectByPrimaryKey(productId).getStatus();
         int result = productMapper.updateStatusByPreStatusAndProductId(Arrays.asList(ProductStatusEnum.creating.name(), ProductStatusEnum.updating.name()), ProductStatusEnum.sale.name(), productId);
         if (result == 0) throw new ProductEventException("非法请求");
         if (ProductStatusEnum.creating.name().equals(status)) {
             updateEventLog(ProductCreateEventEnum.release, ProductCreateEventEnum.create_infos, productId);
-            rocketMQTemplate.sendAsync(Constant.product_create_topic, productId, new SendCallback() {
-                @Override
-                public void onSuccess(SendResult sendResult) {
-                    logger.info("发送消息队列-创建商品-hbase成功, {}", sendResult);
-                }
-
-                @Override
-                public void onException(Throwable e) {
-                    logger.info("发送消息队列-创建商品-hbase失败, {}", e);
-                }
-            });
         }
     }
 
-    private String sortAttrs (String attrs) {
+    @Override
+    public List<ProductSpecs> findSpecsByProductId(Long productId) {
+        return productSpecsMapper.selectByProductId(productId);
+    }
+
+    private String sortAttrs(String attrs) {
         return Arrays.asList(attrs.split("-")).stream().sorted().collect(Collectors.joining("-"));
     }
 
@@ -172,7 +187,7 @@ public class ProductServiceImpl implements ProductService {
     @Override
     @Transactional
     public void createProdouctParamsItems(List<ProductParamsCreateVo> productParamsCreateVo) {
-        List<ProductParamsItem> items = productParamsCreateVo.stream().map(i->{
+        List<ProductParamsItem> items = productParamsCreateVo.stream().map(i -> {
             ProductParamsItem paramsItem = new ProductParamsItem();
             paramsItem.setProductId(i.getProductId());
             paramsItem.setProductSpecsId(i.getProductSpecsId());
@@ -186,10 +201,10 @@ public class ProductServiceImpl implements ProductService {
         String type = productParamsCreateVo.get(0).getType();
         Long productId = productParamsCreateVo.get(0).getProductId();
         if (type.equals(ProductParamsEnum.params.name())) {
-            updateEventLog( ProductCreateEventEnum.create_params, ProductCreateEventEnum.create_attrs, productId);
+            updateEventLog(ProductCreateEventEnum.create_params, ProductCreateEventEnum.create_attrs, productId);
         }
         if (type.equals(ProductParamsEnum.info.name())) {
-            updateEventLog( ProductCreateEventEnum.create_infos, ProductCreateEventEnum.create_params, productId);
+            updateEventLog(ProductCreateEventEnum.create_infos, ProductCreateEventEnum.create_params, productId);
         }
     }
 
@@ -210,7 +225,7 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Override
-    public ProductDetailVo findProductDetail(Long productId) {
+    public ProductDetailVo findProductDetailFromDB(Long productId) {
 
         ProductDetailVo productDetailVo = new ProductDetailVo();
 
@@ -244,7 +259,7 @@ public class ProductServiceImpl implements ProductService {
 
         List<ProductDetailVo.Specs> list = Lists.newArrayList();
 
-        for ( ProductSpecs s : specs) {
+        for (ProductSpecs s : specs) {
             ProductDetailVo.Specs specs1 = new ProductDetailVo.Specs();
             specs1.setKv(new HashMap<>());
             BeanUtils.copyProperties(s, specs1);
@@ -264,8 +279,17 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Override
-    public void createProduct2Hbase(Long productId) {
-        ProductDetailVo productDetailVo = findProductDetail(productId);
+    public ProductDetailVo findProductDetail(Long productId) {
+        ProductDetailVo productDetailVo = findProductDetailFromRedis(productId);
+        if (Objects.isNull(productDetailVo)) productDetailVo = sendProductCreate2RedisMessage(productId);
+        logger.info("find product from redis -> {}", productDetailVo);
+        if (Objects.nonNull(productDetailVo)) return productDetailVo;
+        return findProductDetailFromHbase(productId);
+        //return findProductDetailFromDB(productId);
+    }
+
+    @Override
+    public void createProduct2Hbase(Long productId, ProductDetailVo productDetailVo) {
         String table = HbaseConstant.Product.table;
         String rowKey = productId + "";
         List<Put> puts = Lists.newArrayList();
@@ -275,21 +299,32 @@ public class ProductServiceImpl implements ProductService {
         hbaseService.put(table, rowKey, puts);
     }
 
+    /**
+     * 120分钟缓存有效期
+     */
+    @Override
+    public void createProduct2Redis(Long productId, ProductDetailVo productDetailVo) {
+        String key = RedisPrefix.productDetailByKey(productId);
+        redisService.set(key, JSONObject.toJSONString(productDetailVo), 120, TimeUnit.MINUTES);
+    }
+
     @Override
     public ProductDetailVo findProductDetailFromHbase(Long productId) {
 
         Map<String, Map<String, String>> map = hbaseService.get(HbaseConstant.Product.table, productId + "");
 
-        Map<String, String> specsMap =  map.get(HbaseConstant.Product.specs);
+        if (CollectionUtils.isEmpty(map)) return null;
 
-        Map<String,Map<String,String>> mapList = Maps.newConcurrentMap();
+        Map<String, String> specsMap = map.get(HbaseConstant.Product.specs);
 
-        for (Map.Entry<String,String> entry : specsMap.entrySet()) {
+        Map<String, Map<String, String>> mapList = Maps.newConcurrentMap();
+
+        for (Map.Entry<String, String> entry : specsMap.entrySet()) {
             String k[] = entry.getKey().split("-");
             String group = k[k.length - 1];
-            String key = entry.getKey().substring(0, entry.getKey().lastIndexOf("-") );
+            String key = entry.getKey().substring(0, entry.getKey().lastIndexOf("-"));
             if (!mapList.containsKey(group)) mapList.put(group, Maps.newConcurrentMap());
-            Map<String,String> list = mapList.get(group);
+            Map<String, String> list = mapList.get(group);
             list.put(key, entry.getValue());
         }
 
@@ -306,7 +341,7 @@ public class ProductServiceImpl implements ProductService {
 
         List<ProductDetailVo.AttrValuePair> attrsList = Lists.newArrayList();
         productDetailVo.setAttrs(attrsList);
-        for (Map.Entry<String,String> entry: attrs.entrySet()) {
+        for (Map.Entry<String, String> entry : attrs.entrySet()) {
             String key = entry.getKey();
             ProductDetailVo.AttrValuePair pair = new ProductDetailVo.AttrValuePair();
             pair.setKey(key);
@@ -318,15 +353,15 @@ public class ProductServiceImpl implements ProductService {
 
         productDetailVo.setSpecs(specsList);
 
-        for (Map.Entry<String,Map<String,String>> entry : mapList.entrySet()) {
-            Map<String,String> v = entry.getValue();
+        for (Map.Entry<String, Map<String, String>> entry : mapList.entrySet()) {
+            Map<String, String> v = entry.getValue();
             ProductDetailVo.Specs specs = new ProductDetailVo.Specs();
             specs.setPrice(new BigDecimal(v.get(HbaseConstant.Product.CFSpecs.price)));
             specs.setAttrs(v.get(HbaseConstant.Product.CFSpecs.attrs));
             specs.setId(Long.parseLong(entry.getKey()));
             Map<String, Object> infoMap = Maps.newConcurrentMap();
-            infoMap.put("info", JSONObject.parse(v.get("info")));
-            infoMap.put("params", JSONObject.parse(v.get("params")));
+            if (v.containsKey("info")) infoMap.put("info", JSONObject.parse(v.get("info")));
+            if (v.containsKey("params")) infoMap.put("params", JSONObject.parse(v.get("params")));
             specs.setKv(infoMap);
             specsList.add(specs);
         }
@@ -334,7 +369,57 @@ public class ProductServiceImpl implements ProductService {
         return productDetailVo;
     }
 
-    private List<Put> ColumnFamilyInfoPuts (String rowKey ,ProductDetailVo productDetailVo) {
+    @Override
+    public ProductDetailVo findProductDetailFromRedis(Long productId) {
+        String value = redisService.get(RedisPrefix.productDetailByKey(productId));
+        if (StringUtils.isBlank(value)) return null;
+        ProductDetailVo productDetailVo = null;
+        try {
+            productDetailVo = JSONObject.parseObject(value, ProductDetailVo.class);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return productDetailVo;
+    }
+
+    @Override
+    public ProductDetailVo sendProductCreate2RedisMessage(Long productId) {
+        int retryCount = 0;
+
+        while (Boolean.TRUE) {
+            if (retryCount == 50) break;
+            ProductDetailVo productDetailVo = findProductDetailFromRedis(productId);
+            if (Objects.nonNull(productDetailVo)) return productDetailVo;
+            Boolean result = redisService.setNX(RedisPrefix.productExistsKey(productId), new Date().getTime() + "", 10, TimeUnit.SECONDS);
+            if (Boolean.TRUE.equals(result)) {
+                producerService.sendCreateProdcut2CacheMessage(productId);
+            } else {
+                Integer random = new Random().nextInt(200);
+                try {
+                    Thread.sleep(200L + random);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+                productDetailVo = findProductDetailFromCache(productId);
+                if (Objects.nonNull(productDetailVo)) return productDetailVo;
+                productDetailVo = findProductDetailFromRedis(productId);
+                if (Objects.nonNull(productDetailVo)) return productDetailVo;
+            }
+            ++retryCount;
+        }
+        return null;
+    }
+
+    private ProductDetailVo findProductDetailFromCache(Long productId) {
+        return null;
+    }
+
+    @Override
+    public Boolean isProductDetailExistsFromRedis(Long productId) {
+        return redisService.exists(RedisPrefix.productDetailByKey(productId));
+    }
+
+    private List<Put> ColumnFamilyInfoPuts(String rowKey, ProductDetailVo productDetailVo) {
 
         String columnFamily = HbaseConstant.Product.Info;
         Product product = productDetailVo.getProduct();
@@ -351,20 +436,20 @@ public class ProductServiceImpl implements ProductService {
         return Lists.newArrayList(put1, put2, put3);
     }
 
-    private List<Put> ColumnFamilyAttrPuts (String rowKey ,ProductDetailVo productDetailVo) {
+    private List<Put> ColumnFamilyAttrPuts(String rowKey, ProductDetailVo productDetailVo) {
         String columnFamily = HbaseConstant.Product.attrs;
         List<ProductDetailVo.AttrValuePair> attrs = productDetailVo.getAttrs();
         byte[] row = Bytes.toBytes(rowKey);
-        return attrs.stream().map(attr->{
+        return attrs.stream().map(attr -> {
             byte[] attrKey = Bytes.toBytes(attr.getKey());
             byte[] attrValue = Bytes.toBytes(attr.getValue().stream().collect(Collectors.joining(",")));
             Put put = new Put(row);
-            put.addColumn(Bytes.toBytes(columnFamily) ,attrKey, attrValue);
+            put.addColumn(Bytes.toBytes(columnFamily), attrKey, attrValue);
             return put;
         }).collect(Collectors.toList());
     }
 
-    private List<Put> ColumnFamilySpecsPuts (String rowKey, ProductDetailVo productDetailVo) {
+    private List<Put> ColumnFamilySpecsPuts(String rowKey, ProductDetailVo productDetailVo) {
 
         List<ProductDetailVo.Specs> specsList = productDetailVo.getSpecs();
         byte[] row = Bytes.toBytes(rowKey);
@@ -373,10 +458,10 @@ public class ProductServiceImpl implements ProductService {
 
             String columnFamily = HbaseConstant.Product.specs;
             Put put1 = new Put(row);
-            put1.addColumn(Bytes.toBytes(columnFamily), Bytes.toBytes(HbaseConstant.Product.CFSpecs.attrs+ "-" + specs.getId()), Bytes.toBytes(specs.getAttrs()));
+            put1.addColumn(Bytes.toBytes(columnFamily), Bytes.toBytes(HbaseConstant.Product.CFSpecs.attrs + "-" + specs.getId()), Bytes.toBytes(specs.getAttrs()));
 
             Put put2 = new Put(row);
-            put2.addColumn(Bytes.toBytes(columnFamily), Bytes.toBytes(HbaseConstant.Product.CFSpecs.price+ "-" + specs.getId()), Bytes.toBytes(specs.getPrice()+""));
+            put2.addColumn(Bytes.toBytes(columnFamily), Bytes.toBytes(HbaseConstant.Product.CFSpecs.price + "-" + specs.getId()), Bytes.toBytes(specs.getPrice() + ""));
 
             puts.add(put1);
             puts.add(put2);
@@ -384,7 +469,7 @@ public class ProductServiceImpl implements ProductService {
 
             for (Map.Entry<String, Object> entry : kv.entrySet()) {
                 Put put4 = new Put(row);
-                put4.addColumn(Bytes.toBytes(columnFamily), Bytes.toBytes(entry.getKey()+ "-" + specs.getId()), Bytes.toBytes(JSONObject.toJSONString(entry.getValue())));
+                put4.addColumn(Bytes.toBytes(columnFamily), Bytes.toBytes(entry.getKey() + "-" + specs.getId()), Bytes.toBytes(JSONObject.toJSONString(entry.getValue())));
                 puts.add(put4);
             }
 
@@ -393,7 +478,6 @@ public class ProductServiceImpl implements ProductService {
         return puts;
 
     }
-
 
 
 }

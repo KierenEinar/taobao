@@ -5,6 +5,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import taobao.core.model.APIResponse;
 import taobao.product.models.Product;
+import taobao.product.service.InventoryService;
 import taobao.product.service.ProductService;
 import taobao.product.vo.ProductCreateAttrsStockWebVo;
 import taobao.product.vo.ProductParamsCreateVo;
@@ -17,6 +18,9 @@ public class ProductController {
 
     @Autowired
     ProductService productService;
+
+    @Autowired
+    InventoryService inventoryService;
 
     @RequestMapping(value = "", method = RequestMethod.POST)
     public ResponseEntity<?> createProduct (@RequestBody Product product) {
@@ -55,6 +59,11 @@ public class ProductController {
     @RequestMapping(value = "/hbase/{id}", method = RequestMethod.GET)
     public ResponseEntity<?> findDetailFromHbase (@PathVariable Long id) {
         return ResponseEntity.ok(new APIResponse<>(productService.findProductDetailFromHbase(id)));
+    }
+
+    @RequestMapping(value = "/release/result/{id}", method = RequestMethod.GET)
+    public ResponseEntity<?> isProductPersistRedis (@PathVariable Long id) {
+        return ResponseEntity.ok(new APIResponse<>(inventoryService.isProductStockPersistRedis(id)));
     }
 
 }

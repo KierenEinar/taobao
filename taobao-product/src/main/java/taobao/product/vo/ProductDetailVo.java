@@ -3,10 +3,13 @@ package taobao.product.vo;
 import taobao.product.models.Product;
 import taobao.product.models.ProductSpecs;
 
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
 public class ProductDetailVo {
+
+    private Date timestamp;
 
     private Product product;
 
@@ -51,7 +54,13 @@ public class ProductDetailVo {
         }
     }
 
+    public Date getTimestamp() {
+        return timestamp;
+    }
 
+    public void setTimestamp(Date timestamp) {
+        this.timestamp = timestamp;
+    }
 
     public static class AttrValuePair {
 

@@ -45,6 +45,10 @@ public interface RocketMQTemplate extends InitializingBean, DisposableBean, Mess
 
     void sendAsync (String destination, Message<?> message, SendCallback sendCallback,  long timeout);
 
+    void sendAsync (String destination, Object playload, SendCallback sendCallback, long timeout, Integer delayTimeLevel);
+
+    void sendAsync (String destination, Message<?> message, SendCallback sendCallback, long timeout, Integer delayTimeLevel);
+
     void sendAsync (String destination, Message<?> message, SendCallback sendCallback);
 
     void sendAsyncOrderly (String destination, Message<?> message, String hashKey, SendCallback sendCallback);

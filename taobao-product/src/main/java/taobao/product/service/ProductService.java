@@ -9,6 +9,7 @@ import taobao.product.vo.ProductDetailVo;
 import taobao.product.vo.ProductParamsCreateVo;
 import taobao.product.vo.ProductTemplateCreateVo;
 
+
 import java.util.List;
 
 public interface ProductService {
@@ -19,8 +20,14 @@ public interface ProductService {
     void createProdouctParamsItems(List<ProductParamsCreateVo> productParamsCreateVo);
     void createEventLog(ProductCreateEventEnum status, ProductCreateEventEnum preStatus, EventEnum eventEnum,Long productId);
     void updateEventLog(ProductCreateEventEnum status, ProductCreateEventEnum preStatus, Long productId);
-    ProductDetailVo findProductDetail(Long productId);
-    void createProduct2Hbase(Long productId);
+    void createProduct2Hbase(Long productId, ProductDetailVo productDetailVo);
+    void createProduct2Redis(Long productId, ProductDetailVo productDetailVo);
     ProductDetailVo findProductDetailFromHbase(Long productId);
-
+    ProductDetailVo findProductDetailFromRedis(Long productId);
+    ProductDetailVo findProductDetailFromDB(Long productId);
+    ProductDetailVo findProductDetail (Long productId);
+    ProductDetailVo sendProductCreate2RedisMessage(Long productId);
+    Boolean isProductDetailExistsFromRedis(Long productId);
+    void releaseProduct2DB(Long productId);
+    List<ProductSpecs> findSpecsByProductId(Long productId);
 }

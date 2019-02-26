@@ -140,13 +140,25 @@ public class DefaultRocketMQTemplate extends AbstractMessageSendingTemplate<Stri
 
     @Override
     public void sendAsync(String destination, Message<?> message, SendCallback sendCallback, long timeout) {
+        sendAsync(destination, message, sendCallback, timeout, null);
+    }
 
+    @Override
+    public void sendAsync(String destination, Object playload, SendCallback sendCallback, long timeout, Integer delayTimeLevel) {
+        Message<?> message = this.doConvert(playload, null, null);
+        sendAsync(destination, message, sendCallback, timeout, delayTimeLevel);
+    }
+
+    @Override
+    public void sendAsync(String destination, Message<?> message, SendCallback sendCallback, long timeout, Integer delayTimeLevel) {
         if (Objects.isNull(destination) || Objects.isNull(message)) {
             throw new IllegalStateException("destination and payload not null");
         }
 
         org.apache.rocketmq.common.message.Message msg = this.convertToRocketMessage(objectMapper
-        ,charset, destination, message);
+                ,charset, destination, message);
+
+        if (Objects.nonNull(delayTimeLevel)) msg.setDelayTimeLevel(delayTimeLevel);
 
         try {
             producer.send(msg, sendCallback);
@@ -155,7 +167,6 @@ public class DefaultRocketMQTemplate extends AbstractMessageSendingTemplate<Stri
             logger.error("asyncSend failed d -> {}, msg -> {}", destination, message);
             throw new IllegalStateException(e.getMessage(), e);
         }
-
     }
 
     @Override
