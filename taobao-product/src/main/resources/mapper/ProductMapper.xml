@@ -10,7 +10,7 @@
     <result column="status" jdbcType="CHAR" property="status" />
   </resultMap>
   <resultMap extends="BaseResultMap" id="ResultMapWithBLOBs" type="taobao.product.models.Product">
-    <result column="html" jdbcType="LONGVARCHAR" property="html" />
+    <result column="html" jdbcType="VARCHAR" property="html" />
   </resultMap>
   <sql id="Base_Column_List">
     product_id, name, title, create_time, update_time, status

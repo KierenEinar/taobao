@@ -27,17 +27,15 @@ import taobao.product.exception.ProductEventException;
 import taobao.product.mapper.*;
 import taobao.product.models.*;
 import taobao.product.service.EventLogSevice;
+import taobao.product.service.InventoryService;
 import taobao.product.service.ProducerService;
 import taobao.product.service.ProductService;
 import taobao.product.vo.*;
-import taobao.rocketmq.core.RocketMQTemplate;
 
 import javax.annotation.Resource;
 import java.math.BigDecimal;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.locks.Lock;
-import java.util.concurrent.locks.ReentrantLock;
 import java.util.stream.Collectors;
 
 @Service
@@ -71,9 +69,6 @@ public class ProductServiceImpl implements ProductService {
     KeyGenerator defaultKeyGenerator;
 
     @Autowired
-    RocketMQTemplate rocketMQTemplate;
-
-    @Autowired
     HbaseService hbaseService;
 
     @Autowired
@@ -90,7 +85,8 @@ public class ProductServiceImpl implements ProductService {
 
     Logger logger = LoggerFactory.getLogger(ProductServiceImpl.class);
 
-    private final static Lock redisProductLock = new ReentrantLock();
+    @Autowired
+    InventoryService inventoryService;
 
     @Override
     @Transactional
@@ -287,11 +283,12 @@ public class ProductServiceImpl implements ProductService {
     @Override
     public ProductDetailVo findProductDetail(Long productId) {
         ProductDetailVo productDetailVoCache = findProductDetailFromCache(productId);
+        logger.info("find product from cahce -> {}", productDetailVoCache);
         if (Objects.nonNull(productDetailVoCache)) return productDetailVoCache;
         ProductDetailVo productDetailVo = findProductDetailFromRedis(productId);
         if (Objects.isNull(productDetailVo)) productDetailVo = sendProductCreate2RedisMessage(productId);
         logger.info("find product from redis -> {}", productDetailVo);
-        if (Objects.isNull(productDetailVoCache) && Objects.nonNull(productDetailVo)) {
+        if (Objects.isNull(productDetailVoCache) && Objects.nonNull(productDetailVo) && Objects.nonNull(productDetailVo.getProduct())) {
             localMQTemplate.sendAsync(Constant.Topic.product_create_local_cache_topic, productDetailVo, new LocalMQSendCallback() {
                 @Override
                 public void onSuccess(String msgId) {
@@ -402,6 +399,15 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Override
+    public void setStocks (ProductDetailVo productDetailVo) {
+        if (Objects.isNull(productDetailVo) || Objects.isNull(productDetailVo.getProduct())) return;
+        List<Integer> stocks = inventoryService.getStocks(productDetailVo.getProduct().getProductId(), productDetailVo.getSpecs());
+        for (int i=0; i<productDetailVo.getSpecs().size(); i++) productDetailVo.getSpecs().get(i).setStock(stocks.get(i));
+        logger.info("stocks -> {}", stocks);
+    }
+
+
+    @Override
     public ProductDetailVo sendProductCreate2RedisMessage(Long productId) {
         int retryCount = 0;
 
@@ -454,7 +460,10 @@ public class ProductServiceImpl implements ProductService {
         Put put3 = new Put(Bytes.toBytes(rowKey));
         put3.addColumn(cf, Bytes.toBytes(HbaseConstant.Product.CFInfo.html), Bytes.toBytes(product.getHtml()));
 
-        return Lists.newArrayList(put1, put2, put3);
+        Put put4 = new Put(Bytes.toBytes(rowKey));
+        put3.addColumn(cf, Bytes.toBytes(HbaseConstant.Product.CFInfo.status), Bytes.toBytes(product.getStatus()));
+
+        return Lists.newArrayList(put1, put2, put3, put4);
     }
 
     private List<Put> ColumnFamilyAttrPuts(String rowKey, ProductDetailVo productDetailVo) {

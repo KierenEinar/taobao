@@ -52,6 +52,13 @@ public class ProductDetailVo {
         public void setKv(Map<String, Object> kv) {
             this.kv = kv;
         }
+
+        @Override
+        public String toString() {
+            return "Specs{" +
+                    "kv=" + kv +
+                    '}';
+        }
     }
 
     public Date getTimestamp() {
@@ -84,4 +91,13 @@ public class ProductDetailVo {
         }
     }
 
+    @Override
+    public String toString() {
+        return "ProductDetailVo{" +
+                "timestamp=" + timestamp +
+                ", product=" + product +
+                ", attrs=" + attrs +
+                ", specs=" + specs +
+                '}';
+    }
 }

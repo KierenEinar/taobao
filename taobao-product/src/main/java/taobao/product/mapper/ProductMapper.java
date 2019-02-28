@@ -21,7 +21,7 @@ public interface ProductMapper {
         "values (#{productId,jdbcType=BIGINT}, #{name,jdbcType=VARCHAR}, ",
         "#{title,jdbcType=VARCHAR}, #{createTime,jdbcType=TIMESTAMP}, ",
         "#{updateTime,jdbcType=TIMESTAMP}, #{status,jdbcType=CHAR}, ",
-        "#{html,jdbcType=LONGVARCHAR})"
+        "#{html,jdbcType=VARCHAR})"
     })
     int insert(Product record);
 
@@ -45,7 +45,7 @@ public interface ProductMapper {
           "create_time = #{createTime,jdbcType=TIMESTAMP},",
           "update_time = #{updateTime,jdbcType=TIMESTAMP},",
           "status = #{status,jdbcType=CHAR},",
-          "html = #{html,jdbcType=LONGVARCHAR}",
+          "html = #{html,jdbcType=VARCHAR}",
         "where product_id = #{productId,jdbcType=BIGINT}"
     })
     int updateByPrimaryKeyWithBLOBs(Product record);

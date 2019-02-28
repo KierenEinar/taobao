@@ -17,6 +17,8 @@ import org.springframework.data.redis.core.types.Expiration;
 import org.springframework.data.redis.serializer.Jackson2JsonRedisSerializer;
 import org.springframework.data.redis.serializer.StringRedisSerializer;
 
+import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 
@@ -62,6 +64,10 @@ public class RedisService implements InitializingBean {
         logger.info("redis hmset, key -> {}, value -> {}", key, map);
         redisTemplate.opsForHash().putAll(key, map);
         return Boolean.TRUE;
+    }
+
+    public List mget(String key, List hashKeys) {
+        return redisTemplate.opsForHash().multiGet(key, hashKeys);
     }
 
     public Long hincr(String key, String field) {

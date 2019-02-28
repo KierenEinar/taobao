@@ -30,4 +30,5 @@ public interface ProductService {
     Boolean isProductDetailExistsFromRedis(Long productId);
     void releaseProduct2DB(Long productId);
     List<ProductSpecs> findSpecsByProductId(Long productId);
+    void setStocks (ProductDetailVo productDetailVo);
 }

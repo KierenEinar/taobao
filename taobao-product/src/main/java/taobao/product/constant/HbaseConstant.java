@@ -12,6 +12,7 @@ public interface HbaseConstant {
             String title = "title";
             String name = "name";
             String html = "html";
+            String status = "status";
         }
 
         interface CFSpecs {
