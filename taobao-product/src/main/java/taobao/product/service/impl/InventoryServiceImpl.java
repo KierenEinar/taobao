@@ -70,4 +70,10 @@ public class InventoryServiceImpl implements InventoryService {
 
         return stocks;
     }
+
+    @Override
+    public Boolean incrInventory(Long productId, Long  specsId, Long nums) {
+        Long result = redisService.hincrby(productId+"", specsId+"", nums);
+        return Boolean.TRUE;
+    }
 }

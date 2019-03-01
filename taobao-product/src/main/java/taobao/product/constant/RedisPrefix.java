@@ -7,5 +7,5 @@ public class RedisPrefix {
     public static String productDetailByKey (Long productId) {return "product::detail::" + productId;}
 
     public static String productExistsKey(Long productId) {return "product::exists::" + productId;}
-
+    public static String productBloomFilterKey = "product::bloomfilter";
 }

@@ -233,6 +233,10 @@ public class ProductServiceImpl implements ProductService {
 
         Product product = productMapper.selectByPrimaryKey(productId);
 
+        if (Objects.isNull(product)) {
+            return null;
+        }
+
         productDetailVo.setProduct(product);
 
         List<IdNameObject> keys = productSpecsAttributeKeyMapper.selectAttrsByProductId(productId);
@@ -300,8 +304,7 @@ public class ProductServiceImpl implements ProductService {
                 }
             });
         }
-        if (Objects.nonNull(productDetailVo)) return productDetailVo;
-        return findProductDetailFromHbase(productId);
+        return productDetailVo;
     }
 
     @Override
@@ -406,6 +409,16 @@ public class ProductServiceImpl implements ProductService {
         logger.info("stocks -> {}", stocks);
     }
 
+    @Override
+    public Boolean isNotExistsProduct(Long productId) {
+        return redisService.mightContainsByBloomFilter(RedisPrefix.productBloomFilterKey, productId+"");
+    }
+
+    @Override
+    public void putNotExistsProductByBloomFilter(Long productId) {
+        redisService.putByBloomFilter(RedisPrefix.productBloomFilterKey, productId+"");
+    }
+
 
     @Override
     public ProductDetailVo sendProductCreate2RedisMessage(Long productId) {
@@ -413,6 +426,7 @@ public class ProductServiceImpl implements ProductService {
 
         while (Boolean.TRUE) {
             if (retryCount == 50) break;
+            if (isNotExistsProduct(productId)) return null;
             ProductDetailVo productDetailVo = findProductDetailFromRedis(productId);
             if (Objects.nonNull(productDetailVo)) return productDetailVo;
             Boolean result = redisService.setNX(RedisPrefix.productExistsKey(productId), new Date().getTime() + "", 10, TimeUnit.SECONDS);
@@ -433,6 +447,7 @@ public class ProductServiceImpl implements ProductService {
                 }
             }
             ++retryCount;
+            logger.info("retryCount -> {}", retryCount);
         }
         return null;
     }

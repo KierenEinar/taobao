@@ -31,4 +31,6 @@ public interface ProductService {
     void releaseProduct2DB(Long productId);
     List<ProductSpecs> findSpecsByProductId(Long productId);
     void setStocks (ProductDetailVo productDetailVo);
+    Boolean isNotExistsProduct (Long productId);
+    void putNotExistsProductByBloomFilter (Long productId);
 }
