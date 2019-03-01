@@ -12,9 +12,12 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.dao.DataAccessException;
 import org.springframework.data.redis.connection.RedisConnection;
 import org.springframework.data.redis.connection.RedisStringCommands;
+import org.springframework.data.redis.connection.ReturnType;
 import org.springframework.data.redis.core.HashOperations;
 import org.springframework.data.redis.core.RedisCallback;
 import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.core.script.DefaultRedisScript;
+import org.springframework.data.redis.core.script.RedisScript;
 import org.springframework.data.redis.core.types.Expiration;
 import org.springframework.data.redis.serializer.Jackson2JsonRedisSerializer;
 import org.springframework.data.redis.serializer.StringRedisSerializer;
@@ -125,7 +128,10 @@ public class RedisService implements InitializingBean {
         return lists;
     }
 
-
+    public <T> T eval (String luaScripts, Class<T> returnType, List<String> keys, Object... args) {
+        RedisScript redisScript = RedisScript.of(luaScripts, returnType);
+        return (T)redisTemplate.execute(redisScript, keys, args);
+    }
 
     @Override
     public void afterPropertiesSet() throws Exception {

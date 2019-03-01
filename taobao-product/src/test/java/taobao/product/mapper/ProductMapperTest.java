@@ -2,6 +2,7 @@ package taobao.product.mapper;
 
 import com.alibaba.fastjson.JSONObject;
 import io.shardingsphere.core.keygen.DefaultKeyGenerator;
+import org.assertj.core.util.Lists;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.slf4j.Logger;
@@ -13,6 +14,7 @@ import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.ValueOperations;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.Assert;
 import taobao.core.RedisService;
 import taobao.product.App;
 import taobao.product.constant.RedisPrefix;
@@ -20,6 +22,8 @@ import taobao.product.dto.ProductDetailDto;
 import taobao.product.models.Product;
 import taobao.product.models.ProductSpecsAttributeKey;
 import taobao.product.repository.redis.ProductRedisRepository;
+import taobao.product.script.LuaScript;
+import taobao.product.service.InventoryService;
 import taobao.product.service.ProductService;
 import taobao.product.vo.ProductDetailVo;
 
@@ -50,6 +54,9 @@ public class ProductMapperTest {
 
     @Autowired
     ProductRedisRepository productRedisRepository;
+
+    @Autowired
+    InventoryService inventoryService;
 
     @Test
     @Transactional
@@ -120,4 +127,14 @@ public class ProductMapperTest {
         taobao.product.models.redis.Product product = productRedisRepository.findById(1L).get();
         logger.info("product -> {}", product);
     }
+
+    @Test
+    public void testRedisScript () {
+        boolean result = inventoryService.incrInventory(307553600131825665L, 307553652199915521L, -3L);
+        Assert.isTrue(result, "扣库存失败");
+    }
+
+
+
+
 }
