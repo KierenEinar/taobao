@@ -1,8 +1,9 @@
 package taobao.user.service;
 
-import taobao.user.entity.models.User;
+import taobao.user.model.User;
 
 public interface UserService {
-    void createOne(User user);
+    Boolean createOne(User user);
     User findOne(Long id);
+    User findByMobile (String mobile);
 }

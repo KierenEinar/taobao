@@ -9,6 +9,7 @@ import org.springframework.util.CollectionUtils;
 import taobao.core.RedisService;
 import taobao.product.cache.InventoryCacheContainer;
 import taobao.product.constant.RedisPrefix;
+import taobao.product.dto.InventoryWebVo;
 import taobao.product.mapper.ProductSpecsMapper;
 import taobao.product.models.ProductSpecs;
 import taobao.product.script.LuaScript;
@@ -80,15 +81,15 @@ public class InventoryServiceImpl implements InventoryService {
     }
 
     @Override
-    public Boolean preIncrInventory(Long productId, Long  specsId, Long nums) {
-        String key = RedisPrefix.productSpecsStockKey(productId);
-        String lua = LuaScript.incrbyStock(key, specsId+"");
-        return redisService.eval(lua, Boolean.class, Lists.newArrayList(key), nums);
+    public Boolean preIncrInventory(InventoryWebVo inventoryWebVo) {
+        String key = RedisPrefix.productSpecsStockKey(inventoryWebVo.getProductId());
+        String lua = LuaScript.incrbyStock(key, inventoryWebVo.getSpecsId()+"");
+        return redisService.eval(lua, Boolean.class, Lists.newArrayList(key), inventoryWebVo.getNums());
     }
 
     @Override
-    public Boolean incrInventory(Long productId, Long specsId, Integer nums) {
-        int result = productSpecsMapper.updateInventory(productId, specsId, nums);
+    public Boolean incrInventory(InventoryWebVo inventoryWebVo) {
+        int result = productSpecsMapper.updateInventory(inventoryWebVo.getProductId(), inventoryWebVo.getSpecsId(), inventoryWebVo.getNums());
         return result > 0;
     }
 }

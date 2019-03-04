@@ -1,10 +1,11 @@
-package taobao.user.entity.models;
+package taobao.user.model;
 
 import java.util.Date;
 
 public class User {
 
     private Long id;
+    private Long userId;
     private String firstName;
     private String lastName;
     private Long memberId;
@@ -12,6 +13,7 @@ public class User {
     private Date createTime;
     private Date updateTime;
     private String gender;
+    private String phone;
 
     public Long getId() {
         return id;
@@ -75,5 +77,21 @@ public class User {
 
     public void setGender(String gender) {
         this.gender = gender;
+    }
+
+    public Long getUserId() {
+        return userId;
+    }
+
+    public void setUserId(Long userId) {
+        this.userId = userId;
+    }
+
+    public String getPhone() {
+        return phone;
+    }
+
+    public void setPhone(String phone) {
+        this.phone = phone;
     }
 }

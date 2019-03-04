@@ -1,7 +1,7 @@
 package taobao.user.service;
 
 import taobao.user.App;
-import taobao.user.entity.models.User;
+import taobao.user.model.User;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;

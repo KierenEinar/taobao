@@ -15,8 +15,7 @@ import org.springframework.transaction.annotation.EnableTransactionManagement;
  */
 @SpringBootApplication
 @EnableAutoConfiguration
-@ComponentScan({"com.taobao.core","com.taobao.user"})
-@MapperScan("com.taobao.user.mapper")
+@MapperScan("taobao.user.mapper")
 @EnableTransactionManagement
 @EnableEurekaClient
 @EnableApolloConfig
