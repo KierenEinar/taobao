@@ -10,6 +10,8 @@ public class APIResponse<T> {
         this.data = data;
     }
 
+    public APIResponse() {}
+
     public APIResponse (T data) {
         this(200, data);
     }

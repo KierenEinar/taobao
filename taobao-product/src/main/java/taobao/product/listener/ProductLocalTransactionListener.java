@@ -47,7 +47,7 @@ public class ProductLocalTransactionListener implements RocketMQLocalTransaction
     public RocketMQLocalTransactionState checkLocalTransaction(Message message) {
 
         Long productId = getProductIdByMessage(message);
-        logger.info("executeLocalTransaction, productId -> {}", productId);
+        logger.info("checkLocalTransaction, productId -> {}", productId);
         if (!cache.containsKey(productId)) return RocketMQLocalTransactionState.ROLLBACK;
         Boolean result = cache.get(productId);
         if (Boolean.TRUE.equals(result)) return RocketMQLocalTransactionState.COMMIT;

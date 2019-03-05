@@ -9,12 +9,11 @@ import org.springframework.util.CollectionUtils;
 import taobao.core.RedisService;
 import taobao.product.cache.InventoryCacheContainer;
 import taobao.product.constant.RedisPrefix;
-import taobao.product.dto.InventoryWebVo;
+import taobao.core.vo.InventoryWebVo;
 import taobao.product.mapper.ProductSpecsMapper;
 import taobao.product.models.ProductSpecs;
 import taobao.product.script.LuaScript;
 import taobao.product.service.InventoryService;
-import taobao.product.service.ProducerService;
 import taobao.product.service.ProductService;
 import taobao.product.vo.ProductDetailVo;
 
@@ -35,7 +34,6 @@ public class InventoryServiceImpl implements InventoryService {
 
     @Autowired
     ProductSpecsMapper productSpecsMapper;
-
 
     @Autowired
     InventoryCacheContainer inventoryCacheContainer;
@@ -84,7 +82,13 @@ public class InventoryServiceImpl implements InventoryService {
     public Boolean preIncrInventory(InventoryWebVo inventoryWebVo) {
         String key = RedisPrefix.productSpecsStockKey(inventoryWebVo.getProductId());
         String lua = LuaScript.incrbyStock(key, inventoryWebVo.getSpecsId()+"");
+        logger.info("lua -> {}, key-> {}, num -> {}", lua, key, inventoryWebVo.getNums());
         return redisService.eval(lua, Boolean.class, Lists.newArrayList(key), inventoryWebVo.getNums());
+    }
+
+    @Override
+    public Boolean batchPreIncrInventory(List<InventoryWebVo> inventoryWebVos) {
+
     }
 
     @Override

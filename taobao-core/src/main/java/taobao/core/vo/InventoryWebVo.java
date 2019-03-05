@@ -1,4 +1,4 @@
-package taobao.product.dto;
+package taobao.core.vo;
 
 public class InventoryWebVo {
 

@@ -6,7 +6,7 @@ public class OrderWebVo {
 
     private Long userId;
     private String submitToken;
-    private List<OrderDetailWebVo> details;
+    private List<InventoryWebVo> details;
 
     public Long getUserId() {
         return userId;
@@ -24,33 +24,11 @@ public class OrderWebVo {
         this.submitToken = submitToken;
     }
 
-    public List<OrderDetailWebVo> getDetails() {
+    public List<InventoryWebVo> getDetails() {
         return details;
     }
 
-    public void setDetails(List<OrderDetailWebVo> details) {
+    public void setDetails(List<InventoryWebVo> details) {
         this.details = details;
     }
-
-    public class OrderDetailWebVo {
-        private Long productId;
-        private Integer nums;
-
-        public Long getProductId() {
-            return productId;
-        }
-
-        public void setProductId(Long productId) {
-            this.productId = productId;
-        }
-
-        public Integer getNums() {
-            return nums;
-        }
-
-        public void setNums(Integer nums) {
-            this.nums = nums;
-        }
-    }
-
 }
