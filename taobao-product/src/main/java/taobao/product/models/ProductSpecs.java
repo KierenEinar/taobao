@@ -13,6 +13,8 @@ public class ProductSpecs {
 
     private BigDecimal price;
 
+    private Integer lockNum;
+
     public Long getId() {
         return id;
     }
@@ -51,5 +53,13 @@ public class ProductSpecs {
 
     public void setPrice(BigDecimal price) {
         this.price = price;
+    }
+
+    public Integer getLockNum() {
+        return lockNum;
+    }
+
+    public void setLockNum(Integer lockNum) {
+        this.lockNum = lockNum;
     }
 }

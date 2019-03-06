@@ -17,6 +17,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
 import taobao.core.RedisService;
+import taobao.core.constant.Constant;
 import taobao.core.vo.InventoryWebVo;
 import taobao.hbase.service.HbaseService;
 import taobao.localmq.core.LocalMQSendCallback;

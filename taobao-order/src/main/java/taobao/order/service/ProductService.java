@@ -5,11 +5,13 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import taobao.core.model.APIResponse;
 import taobao.core.vo.InventoryWebVo;
+import taobao.order.dto.ProductSpecesDto;
+import taobao.order.service.impl.ProductServiceImpl;
 
 import java.util.List;
 
-@FeignClient(name = "/api/v1/products", fallback = ProductService.class)
+@FeignClient(name = "taobao-product", fallback = ProductServiceImpl.class)
 public interface ProductService {
-    @PostMapping("/speces")
-    APIResponse findSpeces(@RequestBody List<InventoryWebVo> vos);
+    @PostMapping("/api/v1/products/speces")
+    APIResponse<List<ProductSpecesDto>> findSpeces(List<InventoryWebVo> vos);
 }

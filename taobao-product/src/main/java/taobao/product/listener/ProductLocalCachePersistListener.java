@@ -6,7 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import taobao.localmq.annotation.LocalMQMessageListener;
 import taobao.localmq.core.LocalMQListener;
 import taobao.product.cache.ProductCacheContainer;
-import taobao.product.constant.Constant;
+import taobao.core.constant.Constant;
 import taobao.product.vo.ProductDetailVo;
 
 

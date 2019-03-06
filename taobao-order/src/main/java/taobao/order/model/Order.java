@@ -3,16 +3,16 @@ package taobao.order.model;
 import java.math.BigDecimal;
 import java.util.Date;
 
-public class Orders {
+public class Order {
 
     public interface Status {
-        String creating = "creating";
         String unpaying = "unpaying";
         String paied    = "paied";
         String shipped  = "shipped";
         String finished = "finished";
         String canceled = "canceled";
         String delivered= "delivered";
+        String timeout = "timeout";
     }
 
     public interface PayCHannel {
@@ -20,7 +20,6 @@ public class Orders {
         String weixin   = "weixin";
         String platform = "platform";
     }
-
 
     private Long id;
 

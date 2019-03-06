@@ -17,7 +17,7 @@
 
         <javaClientGenerator targetPackage="taobao.order.mapper" targetProject="../taobao-order/src/main/java" type="MIXEDMAPPER" />
 
-		<table tableName="order_detail" domainObjectName="OrderDetail"
+		<table tableName="orders" domainObjectName="Order"
                enableSelectByExample="false"
                enableDeleteByExample="false"
                enableCountByExample= "false"

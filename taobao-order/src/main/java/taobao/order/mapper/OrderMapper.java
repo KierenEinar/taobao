@@ -1,14 +1,9 @@
 package taobao.order.mapper;
 
-import org.apache.ibatis.annotations.Delete;
-import org.apache.ibatis.annotations.Insert;
-import org.apache.ibatis.annotations.ResultMap;
-import org.apache.ibatis.annotations.Select;
-import org.apache.ibatis.annotations.SelectKey;
-import org.apache.ibatis.annotations.Update;
-import taobao.order.model.Orders;
+import org.apache.ibatis.annotations.*;
+import taobao.order.model.Order;
 
-public interface OrdersMapper {
+public interface OrderMapper {
     @Delete({
         "delete from orders",
         "where id = #{id,jdbcType=BIGINT}"
@@ -16,17 +11,17 @@ public interface OrdersMapper {
     int deleteByPrimaryKey(Long id);
 
     @Insert({
-        "insert into orders (total_cost, user_id, ",
+        "insert into orders (id, total_cost, user_id, ",
         "status, create_time, ",
         "update_time, pay_channel)",
-        "values (#{totalCost,jdbcType=DECIMAL}, #{userId,jdbcType=BIGINT}, ",
+        "values (#{id, jdbcType=BIGINT} ,#{totalCost,jdbcType=DECIMAL}, #{userId,jdbcType=BIGINT}, ",
         "#{status,jdbcType=VARCHAR}, #{createTime,jdbcType=TIMESTAMP}, ",
         "#{updateTime,jdbcType=TIMESTAMP}, #{payChannel,jdbcType=VARCHAR})"
     })
     @SelectKey(statement="SELECT LAST_INSERT_ID()", keyProperty="id", before=false, resultType=Long.class)
-    int insert(Orders record);
+    int insert(Order record);
 
-    int insertSelective(Orders record);
+    int insertSelective(Order record);
 
     @Select({
         "select",
@@ -34,10 +29,10 @@ public interface OrdersMapper {
         "from orders",
         "where id = #{id,jdbcType=BIGINT}"
     })
-    @ResultMap("taobao.order.mapper.OrdersMapper.BaseResultMap")
-    Orders selectByPrimaryKey(Long id);
+    @ResultMap("taobao.order.mapper.OrderMapper.BaseResultMap")
+    Order selectByPrimaryKey(Long id);
 
-    int updateByPrimaryKeySelective(Orders record);
+    int updateByPrimaryKeySelective(Order record);
 
     @Update({
         "update orders",
@@ -49,5 +44,8 @@ public interface OrdersMapper {
           "pay_channel = #{payChannel,jdbcType=VARCHAR}",
         "where id = #{id,jdbcType=BIGINT}"
     })
-    int updateByPrimaryKey(Orders record);
+    int updateByPrimaryKey(Order record);
+
+    @Update("update orders set status = #{status} where id = #{id} and status = #{preStatus};")
+    int updateStatusByPreStatusAndId(@Param("id") Long id, @Param("status") String status, @Param("preStatus") String preStatus);
 }

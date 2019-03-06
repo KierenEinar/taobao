@@ -1,24 +1,39 @@
 package taobao.order.service.impl;
 
+import com.google.common.collect.Lists;
+import io.shardingsphere.core.keygen.KeyGenerator;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import taobao.core.model.APIResponse;
-import taobao.order.mapper.OrdersMapper;
-import taobao.order.model.Orders;
+import taobao.core.vo.InventoryWebVo;
+import taobao.order.dto.OrderItemDto;
+import taobao.order.dto.ProductSpecesDto;
+import taobao.order.exception.OrderException;
+import taobao.order.mapper.OrderDetailMapper;
+import taobao.order.mapper.OrderMapper;
+import taobao.order.model.Order;
+import taobao.order.model.OrderDetail;
+import taobao.order.producer.ProducerService;
 import taobao.order.service.InventoryService;
 import taobao.order.service.OrderService;
 import taobao.order.service.ProductService;
+import java.util.Map;
 import taobao.order.vo.OrderWebVo;
 
 import java.math.BigDecimal;
 import java.util.Date;
+import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 public class OrderServiceImpl implements OrderService {
 
     @Autowired
-    OrdersMapper ordersMapper;
+    OrderMapper ordersMapper;
+
+    @Autowired
+    OrderDetailMapper orderDetailMapper;
 
     @Autowired
     InventoryService inventoryService;
@@ -26,49 +41,92 @@ public class OrderServiceImpl implements OrderService {
     @Autowired
     ProductService productService;
 
+    @Autowired
+    KeyGenerator keyGenerator;
+
+    @Autowired
+    ProducerService producerService;
+
     @Override
     @Transactional
     public Boolean createOrder(OrderWebVo orderWebVo) {
 
         //获取商品信息
 
-         //productService.findSpeces(orderWebVo.getDetails());
+        APIResponse<List<ProductSpecesDto>> speces = productService.findSpeces(orderWebVo.getDetails());
 
+        if (speces.getCode()!=200) throw new IllegalArgumentException("非法请求, 无法找到商品");
 
         //检查重复提交
 
         //锁库存
-
-        APIResponse<Boolean> apiResponse = inventoryService.batchLockInventorys(orderWebVo.getDetails());
+        APIResponse<Boolean> apiResponse = inventoryService.batchPreIncrInventory(orderWebVo.getDetails());
 
         if (Boolean.FALSE.equals(apiResponse.getData())) return Boolean.FALSE;
 
-
         //生成订单
-        //ordersMapper.insert(Order);
+        OrderItemDto orderItemDto = buildOrder(orderWebVo, speces.getData());
+        Order orders = orderItemDto.getOrder();
 
-        //等待付款, 生成延时消息队列(如果没有在规定时间内付款则恢复redis库存)
+        try{
+            int result = ordersMapper.insert(orders);
+            if (result == 0) {
+                throw new OrderException("生成订单失败");
+            }
 
+            //生成订单项
+            List<OrderDetail> details = orderItemDto.getDetails();
+            result = orderDetailMapper.insertBatch (details);
+            if (result == 0)  {
+                throw new OrderException("生成订单失败");
+            }
+        }catch (Exception e) {
+            producerService.sendProductStockBackMessage(orderWebVo.getDetails());
+            throw e;
+        }
+
+        //等待付款, 生成延时消息队列(如果没有在规定时间内付款则恢复mysql库存)
+
+        producerService.sendProductStockUnLockWhileTimeout(orders.getId(), orderWebVo.getDetails());
 
         return Boolean.TRUE;
     }
 
+    @Override
+    public Boolean updateOrderStatus(Long id, String status, String preStatus) {
+        return ordersMapper.updateStatusByPreStatusAndId(id, status, preStatus) > 0;
+    }
 
-
-
-    private Orders createOrder (OrderWebVo orderWebVo) {
-        Orders orders = new Orders();
-        orders.setUserId(orderWebVo.getUserId());
-        orders.setCreateTime(new Date());
-
+    private OrderItemDto buildOrder (OrderWebVo orderWebVo, List<ProductSpecesDto> data) {
+        OrderItemDto orderItemDto = new OrderItemDto();
+        Order order = new Order();
+        order.setUserId(orderWebVo.getUserId());
+        order.setCreateTime(new Date());
+        order.setId(keyGenerator.generateKey().longValue());
         BigDecimal total = new BigDecimal(0.00);
-
-//        orderWebVo.getDetails().forEach(i->{
-//            total.add(i.getNums() * )
-//        });
-
-        orders.setStatus(Orders.Status.creating);
-        return orders;
+        order.setStatus(Order.Status.unpaying);
+        Map<Long, ProductSpecesDto> priceMap = data.stream().collect(Collectors.toMap(ProductSpecesDto::getId, v->v));
+        List<InventoryWebVo> details = orderWebVo.getDetails();
+        List<OrderDetail> orderDetails = Lists.newArrayList();
+        for (InventoryWebVo d : details) {
+            OrderDetail orderDetail = new OrderDetail();
+            orderDetail.setCreateTime(new Date());
+            orderDetail.setOrderId(order.getId());
+            orderDetail.setProductId(d.getProductId());
+            BigDecimal price = priceMap.get(d.getSpecsId()).getPrice();
+            price.setScale(2, BigDecimal.ROUND_FLOOR);
+            orderDetail.setPrice(price);
+            orderDetail.setQuantity(d.getNums());
+            orderDetail.setUserId(orderWebVo.getUserId());
+            orderDetail.setProductSpecsId(d.getSpecsId());
+            total = total.add(orderDetail.getPrice().multiply(new BigDecimal(orderDetail.getQuantity())));
+            orderDetails.add(orderDetail);
+        }
+        total.setScale(2, BigDecimal.ROUND_FLOOR);
+        order.setTotalCost(total);
+        orderItemDto.setOrder(order);
+        orderItemDto.setDetails(orderDetails);
+        return orderItemDto;
     }
 
 

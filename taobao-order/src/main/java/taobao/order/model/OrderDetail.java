@@ -20,6 +20,8 @@ public class OrderDetail {
 
     private Date updateTime;
 
+    private Long productSpecsId;
+
     public Long getId() {
         return id;
     }
@@ -82,5 +84,13 @@ public class OrderDetail {
 
     public void setUpdateTime(Date updateTime) {
         this.updateTime = updateTime;
+    }
+
+    public Long getProductSpecsId() {
+        return productSpecsId;
+    }
+
+    public void setProductSpecsId(Long productSpecsId) {
+        this.productSpecsId = productSpecsId;
     }
 }

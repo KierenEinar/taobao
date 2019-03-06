@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
-<mapper namespace="taobao.order.mapper.OrdersMapper">
-  <resultMap id="BaseResultMap" type="taobao.order.model.Orders">
+<mapper namespace="taobao.order.mapper.OrderMapper">
+  <resultMap id="BaseResultMap" type="taobao.order.model.Order">
     <id column="id" jdbcType="BIGINT" property="id" />
     <result column="total_cost" jdbcType="DECIMAL" property="totalCost" />
     <result column="user_id" jdbcType="BIGINT" property="userId" />
@@ -13,7 +13,7 @@
   <sql id="Base_Column_List">
     id, total_cost, user_id, status, create_time, update_time, pay_channel
   </sql>
-  <insert id="insertSelective" parameterType="taobao.order.model.Orders">
+  <insert id="insertSelective" parameterType="taobao.order.model.Order">
     <selectKey keyProperty="id" order="AFTER" resultType="java.lang.Long">
       SELECT LAST_INSERT_ID()
     </selectKey>
@@ -59,7 +59,7 @@
       </if>
     </trim>
   </insert>
-  <update id="updateByPrimaryKeySelective" parameterType="taobao.order.model.Orders">
+  <update id="updateByPrimaryKeySelective" parameterType="taobao.order.model.Order">
     update orders
     <set>
       <if test="totalCost != null">

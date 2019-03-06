@@ -45,6 +45,11 @@
        <artifactId>tomcat-jdbc</artifactId>
      </dependency>
 
+    <dependency>
+      <groupId>taobao</groupId>
+      <artifactId>taobao-rocketmq-spring-boot-starter</artifactId>
+    </dependency>
+
   </dependencies>
 
   <build>

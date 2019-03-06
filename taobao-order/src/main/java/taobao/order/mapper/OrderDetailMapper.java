@@ -1,12 +1,9 @@
 package taobao.order.mapper;
 
-import org.apache.ibatis.annotations.Delete;
-import org.apache.ibatis.annotations.Insert;
-import org.apache.ibatis.annotations.ResultMap;
-import org.apache.ibatis.annotations.Select;
-import org.apache.ibatis.annotations.SelectKey;
-import org.apache.ibatis.annotations.Update;
+import org.apache.ibatis.annotations.*;
 import taobao.order.model.OrderDetail;
+
+import java.util.List;
 
 public interface OrderDetailMapper {
     @Delete({
@@ -19,11 +16,11 @@ public interface OrderDetailMapper {
         "insert into order_detail (order_id, product_id, ",
         "user_id, quantity, ",
         "price, create_time, ",
-        "update_time)",
+        "update_time, product_specs_id)",
         "values (#{orderId,jdbcType=BIGINT}, #{productId,jdbcType=BIGINT}, ",
         "#{userId,jdbcType=BIGINT}, #{quantity,jdbcType=INTEGER}, ",
         "#{price,jdbcType=DECIMAL}, #{createTime,jdbcType=TIMESTAMP}, ",
-        "#{updateTime,jdbcType=TIMESTAMP})"
+        "#{updateTime,jdbcType=TIMESTAMP}, #{productSpecsId,jdbcType=BIGINT})"
     })
     @SelectKey(statement="SELECT LAST_INSERT_ID()", keyProperty="id", before=false, resultType=Long.class)
     int insert(OrderDetail record);
@@ -32,7 +29,8 @@ public interface OrderDetailMapper {
 
     @Select({
         "select",
-        "id, order_id, product_id, user_id, quantity, price, create_time, update_time",
+        "id, order_id, product_id, user_id, quantity, price, create_time, update_time, ",
+        "product_specs_id",
         "from order_detail",
         "where id = #{id,jdbcType=BIGINT}"
     })
@@ -49,8 +47,11 @@ public interface OrderDetailMapper {
           "quantity = #{quantity,jdbcType=INTEGER},",
           "price = #{price,jdbcType=DECIMAL},",
           "create_time = #{createTime,jdbcType=TIMESTAMP},",
-          "update_time = #{updateTime,jdbcType=TIMESTAMP}",
+          "update_time = #{updateTime,jdbcType=TIMESTAMP},",
+          "product_specs_id = #{productSpecsId,jdbcType=BIGINT}",
         "where id = #{id,jdbcType=BIGINT}"
     })
     int updateByPrimaryKey(OrderDetail record);
+
+    int insertBatch(@Param("list") List<OrderDetail> details);
 }

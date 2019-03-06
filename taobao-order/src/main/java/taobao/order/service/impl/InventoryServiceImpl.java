@@ -4,15 +4,14 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 import taobao.core.model.APIResponse;
+import taobao.core.vo.InventoryWebVo;
 import taobao.order.service.InventoryService;
-import taobao.order.vo.InventoryWebVo;
 
 import java.util.List;
 
 
 @Component
 public class InventoryServiceImpl implements InventoryService {
-
 
     Logger logger = LoggerFactory.getLogger(InventoryServiceImpl.class);
 
@@ -23,7 +22,7 @@ public class InventoryServiceImpl implements InventoryService {
     }
 
     @Override
-    public APIResponse<Boolean> batchLockInventorys(List<InventoryWebVo> inventories) {
+    public APIResponse<Boolean> batchPreIncrInventory(List<InventoryWebVo> inventories) {
         logger.info("锁库存接口调用失败");
         return new APIResponse<>(Boolean.FALSE);
     }

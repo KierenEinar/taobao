@@ -1,5 +1,7 @@
 package taobao.order.vo;
 
+import taobao.core.vo.InventoryWebVo;
+
 import java.util.List;
 
 public class OrderWebVo {

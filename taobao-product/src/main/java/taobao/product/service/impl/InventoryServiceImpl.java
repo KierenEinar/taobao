@@ -14,6 +14,7 @@ import taobao.product.mapper.ProductSpecsMapper;
 import taobao.product.models.ProductSpecs;
 import taobao.product.script.LuaScript;
 import taobao.product.service.InventoryService;
+import taobao.product.service.ProducerService;
 import taobao.product.service.ProductService;
 import taobao.product.vo.ProductDetailVo;
 
@@ -28,6 +29,9 @@ public class InventoryServiceImpl implements InventoryService {
 
     @Autowired
     ProductService productService;
+
+    @Autowired
+    ProducerService producerService;
 
     @Autowired
     RedisService redisService;
@@ -89,6 +93,27 @@ public class InventoryServiceImpl implements InventoryService {
     @Override
     public Boolean batchPreIncrInventory(List<InventoryWebVo> inventoryWebVos) {
 
+        List<InventoryWebVo> stockNotEnough = Lists.newArrayList();
+
+        Boolean flag = Boolean.FALSE;
+
+        for (InventoryWebVo vo: inventoryWebVos) {
+            Boolean result = incrInventory(vo);
+            logger.info("batchPreIncrInventory, result -> {}", result);
+            if (Boolean.TRUE.equals(result)) stockNotEnough.add(vo);
+            else {
+                flag = Boolean.TRUE;
+                break;
+            }
+        }
+
+        if (Boolean.FALSE.equals(flag)) return Boolean.TRUE;
+
+        //发送事务消息, 回退被扣调的库存
+
+        producerService.sendProductStockBackMessage(stockNotEnough);
+
+        return Boolean.FALSE;
     }
 
     @Override

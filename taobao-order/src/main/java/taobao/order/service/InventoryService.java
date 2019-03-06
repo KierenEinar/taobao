@@ -3,8 +3,8 @@ package taobao.order.service;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.PutMapping;
 import taobao.core.model.APIResponse;
+import taobao.core.vo.InventoryWebVo;
 import taobao.order.service.impl.InventoryServiceImpl;
-import taobao.order.vo.InventoryWebVo;
 
 import java.util.List;
 
@@ -13,6 +13,6 @@ import java.util.List;
 public interface InventoryService {
     @PutMapping("/api/v1/inventory/pre/incr")
     APIResponse<Boolean> preIncrInventory(InventoryWebVo inventoryWebVo);
-    @PutMapping("/api/v1/inventory/lock")
-    APIResponse<Boolean> batchLockInventorys(List<InventoryWebVo> inventories);
+    @PutMapping("/api/v1/inventory/pre/incr/batch")
+    APIResponse<Boolean> batchPreIncrInventory(List<InventoryWebVo> inventories);
 }

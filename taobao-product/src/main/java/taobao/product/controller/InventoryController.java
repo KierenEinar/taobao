@@ -12,6 +12,8 @@ import taobao.core.model.APIResponse;
 import taobao.core.vo.InventoryWebVo;
 import taobao.product.service.InventoryService;
 
+import java.util.List;
+
 @RestController
 @RequestMapping("/api/v1/inventory")
 public class InventoryController {
@@ -28,6 +30,15 @@ public class InventoryController {
         logger.info("end preIncrInventory..., result -> {}", result);
         return new APIResponse<>(result);
     }
+
+    @RequestMapping( value = "/pre/incr/batch", method = RequestMethod.PUT)
+    public APIResponse<Boolean> batchPreIncrInventory (@RequestBody List<InventoryWebVo> inventory) {
+        logger.info("begin preIncrInventory ...");
+        Boolean result = inventoryService.batchPreIncrInventory(inventory);
+        logger.info("end preIncrInventory..., result -> {}", result);
+        return new APIResponse<>(result);
+    }
+
 
     @RequestMapping( value = "/incr", method = RequestMethod.PUT)
     public APIResponse<Boolean> incrInventory (@RequestBody InventoryWebVo inventory) {

@@ -4,7 +4,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import taobao.product.constant.Constant;
+import taobao.core.constant.Constant;
 import taobao.product.service.InventoryService;
 import taobao.product.service.ProductService;
 import taobao.product.vo.ProductDetailVo;
