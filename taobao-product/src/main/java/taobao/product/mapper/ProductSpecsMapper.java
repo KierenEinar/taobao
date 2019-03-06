@@ -1,6 +1,7 @@
 package taobao.product.mapper;
 
 import org.apache.ibatis.annotations.*;
+import taobao.core.vo.InventoryWebVo;
 import taobao.product.models.ProductSpecs;
 
 import java.util.List;
@@ -52,4 +53,5 @@ public interface ProductSpecsMapper {
     @Update("update product_specs set stock = stock - #{num} where product_id = #{productId} and id = #{specsId} and (stock - #{num}) > 0;")
     int updateInventory (@Param("productId") Long productId, @Param("specsId") Long specsId, @Param("num") Integer nums);
 
+    ProductSpecs selectBySpeces(InventoryWebVo vos);
 }

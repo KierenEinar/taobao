@@ -29,4 +29,14 @@ public class InventoryWebVo {
     public void setNums(Integer nums) {
         this.nums = nums;
     }
+
+
+    @Override
+    public String toString() {
+        return "InventoryWebVo{" +
+                "productId=" + productId +
+                ", specsId=" + specsId +
+                ", nums=" + nums +
+                '}';
+    }
 }

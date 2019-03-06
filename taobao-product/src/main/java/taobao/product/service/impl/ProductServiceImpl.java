@@ -17,6 +17,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
 import taobao.core.RedisService;
+import taobao.core.vo.InventoryWebVo;
 import taobao.hbase.service.HbaseService;
 import taobao.localmq.core.LocalMQSendCallback;
 import taobao.localmq.core.LocalMQTemplate;
@@ -417,6 +418,15 @@ public class ProductServiceImpl implements ProductService {
     @Override
     public void putNotExistsProductByBloomFilter(Long productId) {
         redisService.putByBloomFilter(RedisPrefix.productBloomFilterKey, productId+"");
+    }
+
+    @Override
+    public List<ProductSpecs> findSpeces(List<InventoryWebVo> vos) {
+        List<ProductSpecs> productSpecs = Lists.newArrayList();
+        for (InventoryWebVo vo : vos) {
+            productSpecs.add(productSpecsMapper.selectBySpeces(vo));
+        }
+        return productSpecs;
     }
 
 

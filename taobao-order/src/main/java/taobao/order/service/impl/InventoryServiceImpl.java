@@ -7,6 +7,8 @@ import taobao.core.model.APIResponse;
 import taobao.order.service.InventoryService;
 import taobao.order.vo.InventoryWebVo;
 
+import java.util.List;
+
 
 @Component
 public class InventoryServiceImpl implements InventoryService {
@@ -17,6 +19,12 @@ public class InventoryServiceImpl implements InventoryService {
     @Override
     public APIResponse<Boolean> preIncrInventory(InventoryWebVo inventoryWebVo) {
         logger.info("调用预扣库存接口失败");
+        return new APIResponse<>(Boolean.FALSE);
+    }
+
+    @Override
+    public APIResponse<Boolean> batchLockInventorys(List<InventoryWebVo> inventories) {
+        logger.info("锁库存接口调用失败");
         return new APIResponse<>(Boolean.FALSE);
     }
 }

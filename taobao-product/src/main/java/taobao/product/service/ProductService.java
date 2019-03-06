@@ -1,5 +1,6 @@
 package taobao.product.service;
 
+import taobao.core.vo.InventoryWebVo;
 import taobao.product.constant.EventEnum;
 import taobao.product.constant.ProductCreateEventEnum;
 import taobao.product.models.Product;
@@ -33,4 +34,7 @@ public interface ProductService {
     void setStocks (ProductDetailVo productDetailVo);
     Boolean isNotExistsProduct (Long productId);
     void putNotExistsProductByBloomFilter (Long productId);
+
+    List<ProductSpecs> findSpeces(List<InventoryWebVo> vos);
+
 }

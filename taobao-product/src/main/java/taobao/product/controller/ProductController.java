@@ -4,7 +4,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import taobao.core.model.APIResponse;
+import taobao.core.vo.InventoryWebVo;
 import taobao.product.models.Product;
+import taobao.product.models.ProductSpecs;
 import taobao.product.service.InventoryService;
 import taobao.product.service.ProductService;
 import taobao.product.vo.ProductCreateAttrsStockWebVo;
@@ -65,5 +67,11 @@ public class ProductController {
     public ResponseEntity<?> isProductPersistRedis (@PathVariable Long id) {
         return ResponseEntity.ok(new APIResponse<>(inventoryService.isProductStockPersistRedis(id)));
     }
+
+    @RequestMapping(value = "/speces", method = RequestMethod.POST)
+    public APIResponse<List<ProductSpecs>> findSpeces (@RequestBody List<InventoryWebVo> inventoryWebVos) {
+        return new APIResponse<>(productService.findSpeces(inventoryWebVos));
+    }
+
 
 }

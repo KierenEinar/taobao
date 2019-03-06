@@ -4,6 +4,24 @@ import java.math.BigDecimal;
 import java.util.Date;
 
 public class Orders {
+
+    public interface Status {
+        String creating = "creating";
+        String unpaying = "unpaying";
+        String paied    = "paied";
+        String shipped  = "shipped";
+        String finished = "finished";
+        String canceled = "canceled";
+        String delivered= "delivered";
+    }
+
+    public interface PayCHannel {
+        String zhifubao = "zhifubao";
+        String weixin   = "weixin";
+        String platform = "platform";
+    }
+
+
     private Long id;
 
     private BigDecimal totalCost;

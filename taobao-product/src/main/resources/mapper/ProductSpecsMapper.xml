@@ -70,4 +70,11 @@
       (#{item.id} ,#{item.productId}, #{item.attrs}, #{item.stock}, #{item.price})
     </foreach>
   </insert>
+
+  <select id="selectBySpeces" resultType="taobao.product.models.ProductSpecs" parameterType="taobao.core.vo.InventoryWebVo">
+    select * from product_specs
+    <where>
+      product_id = #{productId} and id = #{specsId}
+    </where>
+  </select>
 </mapper>
