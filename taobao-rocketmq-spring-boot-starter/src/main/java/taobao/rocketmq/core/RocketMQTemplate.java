@@ -5,6 +5,8 @@ import org.apache.rocketmq.client.producer.*;
 import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.messaging.Message;
+import taobao.rocketmq.constant.DelayTimeLevel;
+
 import java.util.concurrent.ExecutorService;
 
 public interface RocketMQTemplate extends InitializingBean, DisposableBean, MessageConverter {

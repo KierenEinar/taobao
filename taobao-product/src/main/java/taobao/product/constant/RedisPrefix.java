@@ -8,4 +8,5 @@ public class RedisPrefix {
 
     public static String productExistsKey(Long productId) {return "product::exists::" + productId;}
     public static String productBloomFilterKey = "product::bloomfilter";
+    public static String productInventoryIdempotency(Long orderId) {return "idempotency::product::" + orderId;}
 }

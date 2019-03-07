@@ -118,7 +118,12 @@ public class InventoryServiceImpl implements InventoryService {
 
     @Override
     public Boolean incrInventory(InventoryWebVo inventoryWebVo) {
-        int result = productSpecsMapper.updateInventory(inventoryWebVo.getProductId(), inventoryWebVo.getSpecsId(), inventoryWebVo.getNums());
-        return result > 0;
+        try{
+            int result = productSpecsMapper.updateInventory(inventoryWebVo.getProductId(), inventoryWebVo.getSpecsId(), inventoryWebVo.getNums());
+            return result > 0;
+        }catch (Exception e) {
+            e.printStackTrace();
+            return Boolean.FALSE;
+        }
     }
 }

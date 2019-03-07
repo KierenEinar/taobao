@@ -9,6 +9,13 @@ public class Constant {
         String product_detail_cache_group = "product-detail-cache-group";
         String inventory_update_group = "inventory-update-group";
         String order_group = "order-group";
+        String order_transaction_group = "order-transaction-group";
+    }
+
+    public interface TransactionProducer {
+
+        String product_release_group = "product-release-group";
+        String product_order_timeout_group = "product-order-timeout-group";
     }
 
     public interface Topic {

@@ -47,7 +47,7 @@ public class ProducerServiceImpl implements ProducerService {
 
     @Override
     public void sendCreateProductMQInTransaction(Long productId) {
-        rocketMQTemplate.sendMessageInTransaction(taobao.rocketmq.annotation.Constant.ROCKETMQ_TRANSACTION_DEFAULT_GLOBAL_NAME, Constant.Topic.product_create_redis_transaction_topic, productId, null);
+        rocketMQTemplate.sendMessageInTransaction(Constant.TransactionProducer.product_release_group, Constant.Topic.product_create_redis_transaction_topic, productId, null);
     }
 
     @Override

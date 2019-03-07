@@ -1,23 +1,32 @@
 package taobao.order.producer.impl;
 
+import com.alibaba.fastjson.JSONObject;
 import org.apache.rocketmq.client.producer.SendCallback;
 import org.apache.rocketmq.client.producer.SendResult;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.scheduling.config.FixedDelayTask;
 import org.springframework.stereotype.Service;
 import taobao.core.constant.Constant;
 import taobao.core.vo.InventoryWebVo;
+import taobao.order.model.Order;
 import taobao.order.producer.ProducerService;
+
+import taobao.order.task.DelayQueueTask;
 import taobao.rocketmq.core.RocketMQTemplate;
 
 import java.util.List;
+
 
 @Service
 public class ProducerServiceImpl implements ProducerService {
 
     @Autowired
     RocketMQTemplate rocketMQTemplate;
+
+    @Autowired
+    DelayQueueTask delayQueueTask;
 
     Logger logger = LoggerFactory.getLogger(ProducerServiceImpl.class);
 
@@ -48,8 +57,10 @@ public class ProducerServiceImpl implements ProducerService {
     }
 
     @Override
-    public void sendProductStockUnLockWhileTimeout(Long id, List<InventoryWebVo> details) {
-        rocketMQTemplate.sendAsync(Constant.Topic.order_timeout_topic, id, new SendCallbackImpl<>(id));
-        sendProductStockBackMessage(details);
+    public void sendProductStockUnLockWhileTimeout(Order order) {
+        delayQueueTask.put(()->{
+            String message = JSONObject.toJSONString(order);
+            rocketMQTemplate.sendMessageInTransaction(Constant.TransactionProducer.product_order_timeout_group, Constant.Topic.order_timeout_topic, message, null);
+        },10000L);
     }
 }

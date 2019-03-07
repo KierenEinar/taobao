@@ -13,11 +13,11 @@
     id, product_id, event_name, status, pre_status, version
   </sql>
   <insert id="insertSelective" parameterType="taobao.product.models.EventLog">
-    <selectKey keyProperty="id" order="AFTER" resultType="java.lang.Long">
-      SELECT LAST_INSERT_ID()
-    </selectKey>
     insert into event_log
     <trim prefix="(" suffix=")" suffixOverrides=",">
+      <if test="id != null">
+        id,
+      </if>
       <if test="productId != null">
         product_id,
       </if>
@@ -35,6 +35,9 @@
       </if>
     </trim>
     <trim prefix="values (" suffix=")" suffixOverrides=",">
+      <if test="id != null">
+        #{id,jdbcType=BIGINT},
+      </if>
       <if test="productId != null">
         #{productId,jdbcType=BIGINT},
       </if>

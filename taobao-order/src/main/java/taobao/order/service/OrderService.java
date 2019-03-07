@@ -1,9 +1,12 @@
 package taobao.order.service;
-
-import taobao.order.model.Orders;
+import taobao.order.model.OrderDetail;
 import taobao.order.vo.OrderWebVo;
+
+import java.util.List;
 
 public interface OrderService {
     Boolean createOrder (OrderWebVo orderWebVo);
-    Boolean updateOrderStatus(Long id, String status, String preStatus);
+    Boolean updateOrderStatus(Long id, String status, String preStatus,  Long userId);
+    String findOrderStatus(Long id, Long userId);
+    List<OrderDetail> findDetails(Long id, Long userId);
 }

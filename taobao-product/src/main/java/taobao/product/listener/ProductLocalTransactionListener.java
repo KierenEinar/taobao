@@ -6,6 +6,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import taobao.core.constant.Constant;
 import taobao.product.service.ProductService;
 
 import java.util.Map;
@@ -16,7 +17,7 @@ import taobao.rocketmq.core.RocketMQLocalTransactionListener;
 import taobao.rocketmq.core.RocketMQLocalTransactionState;
 
 
-@RocketMQTransactionListener
+@RocketMQTransactionListener(producerGroup = Constant.TransactionProducer.product_release_group)
 public class ProductLocalTransactionListener implements RocketMQLocalTransactionListener {
 
     @Autowired

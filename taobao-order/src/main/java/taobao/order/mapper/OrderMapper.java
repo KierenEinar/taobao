@@ -3,6 +3,8 @@ package taobao.order.mapper;
 import org.apache.ibatis.annotations.*;
 import taobao.order.model.Order;
 
+import java.util.Date;
+
 public interface OrderMapper {
     @Delete({
         "delete from orders",
@@ -18,7 +20,6 @@ public interface OrderMapper {
         "#{status,jdbcType=VARCHAR}, #{createTime,jdbcType=TIMESTAMP}, ",
         "#{updateTime,jdbcType=TIMESTAMP}, #{payChannel,jdbcType=VARCHAR})"
     })
-    @SelectKey(statement="SELECT LAST_INSERT_ID()", keyProperty="id", before=false, resultType=Long.class)
     int insert(Order record);
 
     int insertSelective(Order record);
@@ -46,6 +47,9 @@ public interface OrderMapper {
     })
     int updateByPrimaryKey(Order record);
 
-    @Update("update orders set status = #{status} where id = #{id} and status = #{preStatus};")
-    int updateStatusByPreStatusAndId(@Param("id") Long id, @Param("status") String status, @Param("preStatus") String preStatus);
+    @Update("update orders set status = #{status}, update_time = #{updateTime} where id = #{id} and user_id = #{userId} and status = #{preStatus};")
+    int updateStatusByPreStatusAndId(@Param("id") Long id, @Param("status") String status, @Param("preStatus") String preStatus, @Param("updateTime") Date updateTime, @Param("userId") Long userId);
+
+    @Select("select * from order where id = #{id} and user_id = #{userId};")
+    Order selectByIdAndUserId(@Param("id") Long id,@Param("userId") Long userId);
 }

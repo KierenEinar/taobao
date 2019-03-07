@@ -54,4 +54,7 @@ public interface OrderDetailMapper {
     int updateByPrimaryKey(OrderDetail record);
 
     int insertBatch(@Param("list") List<OrderDetail> details);
+
+    @Select("select * from order_detail where order_id = #{orderId} and user_id = #{userId};")
+    List<OrderDetail> selectByOrderIdAndUserId(@Param("orderId") Long id, @Param("userId") Long userId);
 }

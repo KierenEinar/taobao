@@ -87,14 +87,24 @@ public class OrderServiceImpl implements OrderService {
 
         //等待付款, 生成延时消息队列(如果没有在规定时间内付款则恢复mysql库存)
 
-        producerService.sendProductStockUnLockWhileTimeout(orders.getId(), orderWebVo.getDetails());
+        producerService.sendProductStockUnLockWhileTimeout(orders);
 
         return Boolean.TRUE;
     }
 
     @Override
-    public Boolean updateOrderStatus(Long id, String status, String preStatus) {
-        return ordersMapper.updateStatusByPreStatusAndId(id, status, preStatus) > 0;
+    public Boolean updateOrderStatus(Long id, String status, String preStatus, Long userId) {
+        return ordersMapper.updateStatusByPreStatusAndId(id, status, preStatus, new Date(), userId) > 0;
+    }
+
+    @Override
+    public String findOrderStatus(Long id, Long userId) {
+        return ordersMapper.selectByIdAndUserId(id, userId).getStatus();
+    }
+
+    @Override
+    public List<OrderDetail> findDetails(Long id, Long userId) {
+        return orderDetailMapper.selectByOrderIdAndUserId(id, userId);
     }
 
     private OrderItemDto buildOrder (OrderWebVo orderWebVo, List<ProductSpecesDto> data) {

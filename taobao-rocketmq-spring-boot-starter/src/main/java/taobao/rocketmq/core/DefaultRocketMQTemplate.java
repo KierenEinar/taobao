@@ -18,6 +18,7 @@ import org.springframework.messaging.core.AbstractMessageSendingTemplate;
 import org.springframework.messaging.support.MessageBuilder;
 import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
+import taobao.rocketmq.constant.DelayTimeLevel;
 import taobao.rocketmq.support.RocketMQHeaders;
 
 import java.nio.charset.Charset;
@@ -242,9 +243,15 @@ public class DefaultRocketMQTemplate extends AbstractMessageSendingTemplate<Stri
 
     @Override
     public TransactionSendResult sendMessageInTransaction(String groupName, String destination, Message message, Object args) {
+        return sendMessageInTransaction(groupName, destination, message, args);
+    }
 
+    @Override
+    public TransactionSendResult sendMessageInTransaction(String groupName, String destination, Object payload, Object args) {
+       Message<?> message = this.doConvert(payload, null, null);
         TransactionMQProducer transactionMQProducer = getTransactionProducer(groupName);
         org.apache.rocketmq.common.message.Message msg = this.convertToRocketMessage(objectMapper, charset, destination, message);
+        logger.info("transaction message delay level ->{}", msg.getDelayTimeLevel());
         try {
             TransactionSendResult transactionSendResult = transactionMQProducer.sendMessageInTransaction(msg,args);
             return transactionSendResult;
@@ -252,15 +259,8 @@ public class DefaultRocketMQTemplate extends AbstractMessageSendingTemplate<Stri
             e.printStackTrace();
             throw new RuntimeException(e);
         }
-
-
     }
 
-    @Override
-    public TransactionSendResult sendMessageInTransaction(String groupName, String destination, Object payload, Object args) {
-       Message<?> message = this.doConvert(payload, null, null);
-       return sendMessageInTransaction(groupName, destination, message, args);
-    }
 
     private TransactionMQProducer createMQTransactionProducer(String name, RocketMQLocalTransactionListener rocketMQLocalTransactionListener, ExecutorService executorService) {
 
