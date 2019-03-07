@@ -2,6 +2,7 @@ package taobao.user.service.impl;
 
 import io.shardingsphere.core.keygen.KeyGenerator;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.transaction.annotation.Transactional;
 import taobao.user.model.User;
 import taobao.user.mapper.UserMapper;
 import taobao.user.service.UserService;
@@ -27,7 +28,8 @@ public class UserServiceImpl implements UserService {
     String dataSources;
 
 
-
+    @Override
+    @Transactional
     public Boolean createOne(User user) {
         Long userId = keyGenerator.generateKey().longValue();
         int length = dataSources.split(",").length;

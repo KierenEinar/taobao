@@ -19,6 +19,8 @@ import taobao.order.service.InventoryService;
 import taobao.order.service.OrderService;
 import taobao.order.service.ProductService;
 import java.util.Map;
+
+import taobao.order.vo.OrderPayWebVo;
 import taobao.order.vo.OrderWebVo;
 
 import java.math.BigDecimal;
@@ -105,6 +107,20 @@ public class OrderServiceImpl implements OrderService {
     @Override
     public List<OrderDetail> findDetails(Long id, Long userId) {
         return orderDetailMapper.selectByOrderIdAndUserId(id, userId);
+    }
+
+    @Override
+    @Transactional
+    public Boolean payOrder(OrderPayWebVo orderPayWebVo) {
+
+        // 扣款
+
+        //确认订单
+
+        //前面两步在本地db中执行
+
+        // 扣被锁的库存 (tcc)
+        return Boolean.FALSE;
     }
 
     private OrderItemDto buildOrder (OrderWebVo orderWebVo, List<ProductSpecesDto> data) {

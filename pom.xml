@@ -20,6 +20,7 @@
     <module>taobao-rocketmq-spring-boot-starter</module>
     <module>taobao-redis-spring-boot-starter</module>
     <module>taobao-localmq-spring-boot-starter</module>
+    <module>taobao-account</module>
   </modules>
   <properties>
     <mybatis.spring.boot.version>1.3.2</mybatis.spring.boot.version>
