@@ -15,6 +15,7 @@ import taobao.order.mapper.OrderMapper;
 import taobao.order.model.Order;
 import taobao.order.model.OrderDetail;
 import taobao.order.producer.ProducerService;
+import taobao.order.service.AccountService;
 import taobao.order.service.InventoryService;
 import taobao.order.service.OrderService;
 import taobao.order.service.ProductService;
@@ -26,6 +27,7 @@ import taobao.order.vo.OrderWebVo;
 import java.math.BigDecimal;
 import java.util.Date;
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 @Service
@@ -48,6 +50,9 @@ public class OrderServiceImpl implements OrderService {
 
     @Autowired
     ProducerService producerService;
+
+    @Autowired
+    AccountService accountService;
 
     @Override
     @Transactional
@@ -113,15 +118,38 @@ public class OrderServiceImpl implements OrderService {
     @Transactional
     public Boolean payOrder(OrderPayWebVo orderPayWebVo) {
 
-        // 扣款
+        Order order = ordersMapper.selectByPrimaryKey(orderPayWebVo.getOrderId());
+        if (Objects.isNull(order)) throw new OrderException("无法找到当前订单");
 
-        //确认订单
+        //订单状态修改为已支付
+        int result = ordersMapper.updateStatusByPreStatusAndId(order.getId(), Order.Status.paied, Order.Status.unpaying, new Date(), orderPayWebVo.getUserId());
+        if (result == 0) throw new OrderException("订单状态修改失败");
+
+        // 冻结金额
+        APIResponse<String> freezeResponse = accountService.freezeAmount(order);
+        if (freezeResponse.getCode() != 200) throw new OrderException(freezeResponse.getData());
 
         //前面两步在本地db中执行
 
         // 扣被锁的库存 (tcc)
-        return Boolean.FALSE;
+        APIResponse<Boolean> apiResponse = inventoryService.batchIncrInventory(findInventorysByOrder(order));
+        if (Boolean.FALSE.equals(apiResponse.getData())) throw new OrderException("扣库存失败");
+
+        return Boolean.TRUE;
     }
+
+    private List<InventoryWebVo> findInventorysByOrder(Order order) {
+
+        List<OrderDetail> orderDetails = orderDetailMapper.selectByOrderIdAndUserId(order.getId(), order.getUserId());
+        return orderDetails.stream().map(i->{
+            InventoryWebVo inventoryWebVo = new InventoryWebVo();
+            inventoryWebVo.setNums(0 - i.getQuantity());
+            inventoryWebVo.setProductId(i.getProductId());
+            inventoryWebVo.setSpecsId(i.getProductSpecsId());
+            return inventoryWebVo;
+        }).collect(Collectors.toList());
+    }
+
 
     private OrderItemDto buildOrder (OrderWebVo orderWebVo, List<ProductSpecesDto> data) {
         OrderItemDto orderItemDto = new OrderItemDto();

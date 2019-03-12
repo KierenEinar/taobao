@@ -15,4 +15,6 @@ public interface InventoryService {
     APIResponse<Boolean> preIncrInventory(InventoryWebVo inventoryWebVo);
     @PutMapping("/api/v1/inventory/pre/incr/batch")
     APIResponse<Boolean> batchPreIncrInventory(List<InventoryWebVo> inventories);
+    @PutMapping("/api/v1/inventory/incr/batch")
+    APIResponse<Boolean> batchIncrInventory(List<InventoryWebVo> inventories);
 }

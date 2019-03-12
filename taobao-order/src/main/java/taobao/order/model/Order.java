@@ -90,4 +90,17 @@ public class Order {
     public void setPayChannel(String payChannel) {
         this.payChannel = payChannel == null ? null : payChannel.trim();
     }
+
+    @Override
+    public String toString() {
+        return "Order{" +
+                "id=" + id +
+                ", totalCost=" + totalCost +
+                ", userId=" + userId +
+                ", status='" + status + '\'' +
+                ", createTime=" + createTime +
+                ", updateTime=" + updateTime +
+                ", payChannel='" + payChannel + '\'' +
+                '}';
+    }
 }

@@ -22,10 +22,7 @@ public class AccountServiceImpl implements AccountService {
     @Override
     @Transactional
     public Boolean pay(AccountWebVo accountWebVo) {
-
-
-
-
+        return Boolean.FALSE;
     }
 
     @Override
