@@ -83,4 +83,8 @@
     </set>
     where id = #{id,jdbcType=BIGINT}
   </update>
+
+  <update id="updateDecrBalanceAndIncrLockBalance">
+    update account set balance = balance - #{amount}, lock_balance = lock_balance + #{amount}, update_time = now() where user_id = #{userId} and status = 'active';
+  </update>
 </mapper>

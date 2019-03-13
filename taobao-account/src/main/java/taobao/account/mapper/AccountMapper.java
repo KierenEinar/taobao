@@ -1,11 +1,6 @@
 package taobao.account.mapper;
 
-import org.apache.ibatis.annotations.Delete;
-import org.apache.ibatis.annotations.Insert;
-import org.apache.ibatis.annotations.ResultMap;
-import org.apache.ibatis.annotations.Select;
-import org.apache.ibatis.annotations.SelectKey;
-import org.apache.ibatis.annotations.Update;
+import org.apache.ibatis.annotations.*;
 import taobao.account.model.Account;
 
 import java.math.BigDecimal;
@@ -53,5 +48,5 @@ public interface AccountMapper {
     })
     int updateByPrimaryKey(Account record);
 
-    int updateDecrBalanceAndIncrLockBalance(Long userId, BigDecimal amount);
+    int updateDecrBalanceAndIncrLockBalance(@Param("userId") Long userId, @Param("amount") BigDecimal amount);
 }

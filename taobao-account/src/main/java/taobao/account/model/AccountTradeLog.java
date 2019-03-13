@@ -1,5 +1,6 @@
 package taobao.account.model;
 
+import java.math.BigDecimal;
 import java.util.Date;
 
 public class AccountTradeLog {
@@ -11,11 +12,15 @@ public class AccountTradeLog {
 
     private Date createTime;
 
-    private Long balance;
+    private BigDecimal balance;
 
     private String remark;
 
     private String channel;
+
+    private String orderId;
+
+    private Long userId;
 
     public interface Channel{
         String union_pay = "union_pay";
@@ -54,11 +59,11 @@ public class AccountTradeLog {
         this.createTime = createTime;
     }
 
-    public Long getBalance() {
+    public BigDecimal getBalance() {
         return balance;
     }
 
-    public void setBalance(Long balance) {
+    public void setBalance(BigDecimal balance) {
         this.balance = balance;
     }
 
@@ -76,5 +81,21 @@ public class AccountTradeLog {
 
     public void setChannel(String channel) {
         this.channel = channel == null ? null : channel.trim();
+    }
+
+    public String getOrderId() {
+        return orderId;
+    }
+
+    public void setOrderId(String orderId) {
+        this.orderId = orderId;
+    }
+
+    public Long getUserId() {
+        return userId;
+    }
+
+    public void setUserId(Long userId) {
+        this.userId = userId;
     }
 }

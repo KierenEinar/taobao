@@ -1,5 +1,6 @@
 package taobao.order.producer.impl;
 
+import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import org.apache.rocketmq.client.producer.SendCallback;
 import org.apache.rocketmq.client.producer.SendResult;
@@ -10,6 +11,7 @@ import org.springframework.scheduling.config.FixedDelayTask;
 import org.springframework.stereotype.Service;
 import taobao.core.constant.Constant;
 import taobao.core.vo.InventoryWebVo;
+import taobao.core.vo.OrderPayVo;
 import taobao.order.model.Order;
 import taobao.order.producer.ProducerService;
 
@@ -62,5 +64,11 @@ public class ProducerServiceImpl implements ProducerService {
             String message = JSONObject.toJSONString(order);
             rocketMQTemplate.sendMessageInTransaction(Constant.TransactionProducer.product_order_timeout_group, Constant.Topic.order_timeout_topic, message, null);
         },10000L);
+    }
+
+    @Override
+    public void sendOrderPayFailed(OrderPayVo orderPayVo) {
+        String json = JSONObject.toJSONString(orderPayVo);
+        rocketMQTemplate.sendAsync(Constant.Topic.order_update_failed_topic, json, new SendCallbackImpl(json));
     }
 }

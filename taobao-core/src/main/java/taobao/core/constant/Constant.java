@@ -10,6 +10,7 @@ public class Constant {
         String inventory_update_group = "inventory-update-group";
         String order_group = "order-group";
         String order_transaction_group = "order-transaction-group";
+        String account_group = "account_group";
     }
 
     public interface TransactionProducer {
@@ -27,6 +28,9 @@ public class Constant {
         String inventory_update_topic = "inventory-update-topic";
         String inventory_back_topic = "inventory-back-topic";
         String order_timeout_topic = "order_timeout-topic";
+        String pay_success_notify_order = "pay-success-notify-order";
+        String order_update_failed_topic = "order-update-failed-topic";
+        String account_refund_topic = "account-refund-topic";
     }
 
     public static class HashKey {

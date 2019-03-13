@@ -7,6 +7,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import taobao.core.model.APIResponse;
 import taobao.core.vo.InventoryWebVo;
+import taobao.core.vo.OrderPayVo;
 import taobao.order.dto.OrderItemDto;
 import taobao.order.dto.ProductSpecesDto;
 import taobao.order.exception.OrderException;
@@ -15,7 +16,6 @@ import taobao.order.mapper.OrderMapper;
 import taobao.order.model.Order;
 import taobao.order.model.OrderDetail;
 import taobao.order.producer.ProducerService;
-import taobao.order.service.AccountService;
 import taobao.order.service.InventoryService;
 import taobao.order.service.OrderService;
 import taobao.order.service.ProductService;
@@ -50,9 +50,6 @@ public class OrderServiceImpl implements OrderService {
 
     @Autowired
     ProducerService producerService;
-
-    @Autowired
-    AccountService accountService;
 
     @Override
     @Transactional
@@ -116,22 +113,27 @@ public class OrderServiceImpl implements OrderService {
 
     @Override
     @Transactional
-    public Boolean payOrder(OrderPayWebVo orderPayWebVo) {
+    public Boolean payOrder(OrderPayVo orderPayVo) {
+
+        OrderPayWebVo orderPayWebVo = new OrderPayWebVo();
+        orderPayWebVo.setOrderId(Long.parseLong(orderPayVo.getOrderId()));
+        orderPayWebVo.setUserId(orderPayVo.getUserId());
 
         Order order = ordersMapper.selectByPrimaryKey(orderPayWebVo.getOrderId());
-        if (Objects.isNull(order)) throw new OrderException("无法找到当前订单");
 
-        //订单状态修改为已支付
-        int result = ordersMapper.updateStatusByPreStatusAndId(order.getId(), Order.Status.paied, Order.Status.unpaying, new Date(), orderPayWebVo.getUserId());
-        if (result == 0) throw new OrderException("订单状态修改失败");
+        try{
+            if (Objects.isNull(order)) throw new OrderException("无法找到当前订单");
+            //订单状态修改为已支付
+            int result = ordersMapper.updateStatusByPreStatusAndId(order.getId(), Order.Status.paied, Order.Status.unpaying, new Date(), orderPayWebVo.getUserId());
+            if (result == 0) throw new OrderException("订单状态修改失败");
+        }catch (Exception e) {
+            //订单状态修改失败, 发生一笔退款
+            producerService.sendOrderPayFailed(orderPayVo);
+            throw e;
+        }
 
-        // 冻结金额
-        APIResponse<String> freezeResponse = accountService.freezeAmount(order);
-        if (freezeResponse.getCode() != 200) throw new OrderException(freezeResponse.getData());
 
-        //前面两步在本地db中执行
-
-        // 扣被锁的库存 (tcc)
+        // 扣被锁的库存 (异步扣除)
         APIResponse<Boolean> apiResponse = inventoryService.batchIncrInventory(findInventorysByOrder(order));
         if (Boolean.FALSE.equals(apiResponse.getData())) throw new OrderException("扣库存失败");
 
