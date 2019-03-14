@@ -61,4 +61,5 @@ public class ProducerServiceImpl implements ProducerService {
             rocketMQTemplate.sendAsync(Constant.Topic.inventory_back_topic, i, new SendCallbackImpl(i));
         });
     }
+
 }

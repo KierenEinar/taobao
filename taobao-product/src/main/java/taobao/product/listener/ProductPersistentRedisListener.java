@@ -5,6 +5,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import taobao.core.constant.Constant;
+import taobao.product.service.InventoryService;
 import taobao.product.service.ProductService;
 import taobao.product.vo.ProductDetailVo;
 import taobao.rocketmq.annotation.RocketMQMessageListener;
@@ -19,6 +20,9 @@ public class ProductPersistentRedisListener implements RocketMQListener<Long> {
     @Autowired
     ProductService productService;
 
+    @Autowired
+    InventoryService inventoryService;
+
     Logger logger = LoggerFactory.getLogger(ProductPersistentRedisListener.class);
 
     @Override
@@ -26,6 +30,7 @@ public class ProductPersistentRedisListener implements RocketMQListener<Long> {
         logger.info("ProductPersistentRedisListener, productId -> {}", productId);
         ProductDetailVo productDetailVo = productService.findProductDetailFromDB(productId);
         if (Objects.nonNull(productDetailVo)) {
+            inventoryService.releaseProductStock2Redis(productId);
             productService.createProduct2Redis(productId, productDetailVo);
         } else {
             productService.putNotExistsProductByBloomFilter(productId);

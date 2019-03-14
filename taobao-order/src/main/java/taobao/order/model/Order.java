@@ -35,6 +35,8 @@ public class Order {
 
     private String payChannel;
 
+    private String tradeNo;
+
     public Long getId() {
         return id;
     }
@@ -91,6 +93,14 @@ public class Order {
         this.payChannel = payChannel == null ? null : payChannel.trim();
     }
 
+    public String getTradeNo() {
+        return tradeNo;
+    }
+
+    public void setTradeNo(String tradeNo) {
+        this.tradeNo = tradeNo;
+    }
+
     @Override
     public String toString() {
         return "Order{" +
@@ -101,6 +111,7 @@ public class Order {
                 ", createTime=" + createTime +
                 ", updateTime=" + updateTime +
                 ", payChannel='" + payChannel + '\'' +
+                ", tradeNo='" + tradeNo + '\'' +
                 '}';
     }
 }

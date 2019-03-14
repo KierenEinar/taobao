@@ -9,15 +9,15 @@
         </commentGenerator>
         <jdbcConnection connectionURL="jdbc:mysql://10.11.164.52:13306/db0?useUnicode=true&amp;characterEncoding=utf8&amp;useSSL=false" driverClass="com.mysql.jdbc.Driver" password="NDo%$#jaw^P6NBXR" userId="dev" />
 
-        <javaModelGenerator targetPackage="taobao.account.model" targetProject="../taobao-account/src/main/java">
+        <javaModelGenerator targetPackage="taobao.product.model" targetProject="../taobao-product/src/main/java">
             <property name="trimStrings" value="true" />
 		</javaModelGenerator>
 
-        <sqlMapGenerator targetPackage="mapper" targetProject="../taobao-account/src/main/resources" />
+        <sqlMapGenerator targetPackage="mapper" targetProject="../taobao-product/src/main/resources" />
 
-        <javaClientGenerator targetPackage="taobao.account.mapper" targetProject="../taobao-account/src/main/java" type="MIXEDMAPPER" />
+        <javaClientGenerator targetPackage="taobao.product.mapper" targetProject="../taobao-product/src/main/java" type="MIXEDMAPPER" />
 
-		<table tableName="account_trade_log" domainObjectName="AccountTradeLog"
+		<table tableName="product_specs_locknum_log" domainObjectName="ProductSpecsLocknumLog"
                enableSelectByExample="false"
                enableDeleteByExample="false"
                enableCountByExample= "false"

@@ -60,6 +60,8 @@ public class AccountFreezeVo {
         accountTradeLog.setCreateTime(new Date());
         accountTradeLog.setRemark(remark);
         accountTradeLog.setUserId(userId);
+        accountTradeLog.setChannel(AccountTradeLog.Channel.platform);
+        accountTradeLog.setStatus(AccountTradeLog.Status.payment);
         return accountTradeLog;
     }
 }

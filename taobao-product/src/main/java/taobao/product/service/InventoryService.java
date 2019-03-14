@@ -1,5 +1,6 @@
 package taobao.product.service;
 
+import taobao.core.vo.InventoryLockIncrVo;
 import taobao.core.vo.InventoryWebVo;
 import taobao.product.vo.ProductDetailVo;
 
@@ -12,4 +13,5 @@ public interface InventoryService {
     Boolean preIncrInventory(InventoryWebVo inventoryWebVo);
     Boolean batchPreIncrInventory (List<InventoryWebVo> inventoryWebVos);
     Boolean incrInventory (InventoryWebVo inventoryWebVo);
+    Boolean incrLockInventory (InventoryLockIncrVo inventoryLockIncrVo);
 }

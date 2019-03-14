@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="taobao.product.mapper.ProductSpecsLocknumLogMapper">
+  <resultMap id="BaseResultMap" type="taobao.product.models.ProductSpecsLocknumLog">
+    <id column="id" jdbcType="BIGINT" property="id" />
+    <result column="create_time" jdbcType="DATE" property="createTime" />
+    <result column="specs_id" jdbcType="BIGINT" property="specsId" />
+    <result column="incr_lock_num" jdbcType="INTEGER" property="incrLockNum" />
+    <result column="product_id" jdbcType="BIGINT" property="productId" />
+  </resultMap>
+  <sql id="Base_Column_List">
+    id, create_time, specs_id, incr_lock_num, product_id
+  </sql>
+  <insert id="insertSelective" parameterType="taobao.product.models.ProductSpecsLocknumLog">
+    insert into product_specs_locknum_log
+    <trim prefix="(" suffix=")" suffixOverrides=",">
+      <if test="id != null">
+        id,
+      </if>
+      <if test="createTime != null">
+        create_time,
+      </if>
+      <if test="specsId != null">
+        specs_id,
+      </if>
+      <if test="incrLockNum != null">
+        incr_lock_num,
+      </if>
+      <if test="productId != null">
+        product_id,
+      </if>
+    </trim>
+    <trim prefix="values (" suffix=")" suffixOverrides=",">
+      <if test="id != null">
+        #{id,jdbcType=BIGINT},
+      </if>
+      <if test="createTime != null">
+        #{createTime,jdbcType=DATE},
+      </if>
+      <if test="specsId != null">
+        #{specsId,jdbcType=BIGINT},
+      </if>
+      <if test="incrLockNum != null">
+        #{incrLockNum,jdbcType=INTEGER},
+      </if>
+      <if test="productId != null">
+        #{productId,jdbcType=BIGINT},
+      </if>
+    </trim>
+  </insert>
+  <update id="updateByPrimaryKeySelective" parameterType="taobao.product.models.ProductSpecsLocknumLog">
+    update product_specs_locknum_log
+    <set>
+      <if test="createTime != null">
+        create_time = #{createTime,jdbcType=DATE},
+      </if>
+      <if test="specsId != null">
+        specs_id = #{specsId,jdbcType=BIGINT},
+      </if>
+      <if test="incrLockNum != null">
+        incr_lock_num = #{incrLockNum,jdbcType=INTEGER},
+      </if>
+      <if test="productId != null">
+        product_id = #{productId,jdbcType=BIGINT},
+      </if>
+    </set>
+    where id = #{id,jdbcType=BIGINT}
+  </update>
+</mapper>

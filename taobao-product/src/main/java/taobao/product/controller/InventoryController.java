@@ -48,4 +48,12 @@ public class InventoryController {
         return new APIResponse<>(result);
     }
 
+    @RequestMapping( value = "/incr/batch", method = RequestMethod.PUT)
+    public APIResponse<Boolean> batchIncrInventory (@RequestBody InventoryWebVo inventory) {
+        logger.info("begin incrInventory ...");
+        Boolean result = inventoryService.incrInventory(inventory);
+        logger.info("end incrInventory...");
+        return new APIResponse<>(result);
+    }
+
 }

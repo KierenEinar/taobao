@@ -6,6 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import taobao.core.model.APIResponse;
+import taobao.core.vo.InventoryLockIncrVo;
 import taobao.core.vo.InventoryWebVo;
 import taobao.core.vo.OrderPayVo;
 import taobao.order.dto.OrderItemDto;
@@ -98,7 +99,7 @@ public class OrderServiceImpl implements OrderService {
 
     @Override
     public Boolean updateOrderStatus(Long id, String status, String preStatus, Long userId) {
-        return ordersMapper.updateStatusByPreStatusAndId(id, status, preStatus, new Date(), userId) > 0;
+        return ordersMapper.updateStatusByPreStatusAndId(id, null, status, preStatus, new Date(), userId) > 0;
     }
 
     @Override
@@ -115,6 +116,7 @@ public class OrderServiceImpl implements OrderService {
     @Transactional
     public Boolean payOrder(OrderPayVo orderPayVo) {
 
+        //幂等性校验
         OrderPayWebVo orderPayWebVo = new OrderPayWebVo();
         orderPayWebVo.setOrderId(Long.parseLong(orderPayVo.getOrderId()));
         orderPayWebVo.setUserId(orderPayVo.getUserId());
@@ -124,18 +126,15 @@ public class OrderServiceImpl implements OrderService {
         try{
             if (Objects.isNull(order)) throw new OrderException("无法找到当前订单");
             //订单状态修改为已支付
-            int result = ordersMapper.updateStatusByPreStatusAndId(order.getId(), Order.Status.paied, Order.Status.unpaying, new Date(), orderPayWebVo.getUserId());
+            int result = ordersMapper.updateStatusByPreStatusAndId(order.getId(), orderPayVo.getTradeNo() + "", Order.Status.paied, Order.Status.unpaying, new Date(), orderPayWebVo.getUserId());
             if (result == 0) throw new OrderException("订单状态修改失败");
         }catch (Exception e) {
             //订单状态修改失败, 发生一笔退款
             producerService.sendOrderPayFailed(orderPayVo);
-            throw e;
+            return Boolean.FALSE;
         }
 
-
-        // 扣被锁的库存 (异步扣除)
-        APIResponse<Boolean> apiResponse = inventoryService.batchIncrInventory(findInventorysByOrder(order));
-        if (Boolean.FALSE.equals(apiResponse.getData())) throw new OrderException("扣库存失败");
+        producerService.sendInventoryLcckIncrMessage(findInventorysLockByOrder(order));
 
         return Boolean.TRUE;
     }
@@ -149,6 +148,21 @@ public class OrderServiceImpl implements OrderService {
             inventoryWebVo.setProductId(i.getProductId());
             inventoryWebVo.setSpecsId(i.getProductSpecsId());
             return inventoryWebVo;
+        }).collect(Collectors.toList());
+    }
+
+
+    private List<InventoryLockIncrVo> findInventorysLockByOrder(Order order) {
+
+        List<OrderDetail> orderDetails = orderDetailMapper.selectByOrderIdAndUserId(order.getId(), order.getUserId());
+        return orderDetails.stream().map(i->{
+            InventoryLockIncrVo inventoryLockIncrVo = new InventoryLockIncrVo();
+            inventoryLockIncrVo.setCreateTime(new Date());
+            inventoryLockIncrVo.setId(keyGenerator.generateKey().longValue());
+            inventoryLockIncrVo.setIncrLockNum(0 - i.getQuantity());
+            inventoryLockIncrVo.setProductId(i.getProductId());
+            inventoryLockIncrVo.setSpecsId(i.getProductSpecsId());
+            return inventoryLockIncrVo;
         }).collect(Collectors.toList());
     }
 

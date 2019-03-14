@@ -1,6 +1,8 @@
 package taobao.account.service.impl;
 
 import io.shardingsphere.core.keygen.KeyGenerator;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -33,6 +35,8 @@ public class AccountServiceImpl implements AccountService {
 
     @Autowired
     KeyGenerator keyGenerator;
+
+    Logger logger = LoggerFactory.getLogger(AccountServiceImpl.class);
 
     @Override
     @Transactional
@@ -69,6 +73,7 @@ public class AccountServiceImpl implements AccountService {
         if (result == 0) throw new AccountException("账户余额不足");
         AccountTradeLog accountTradeLog = accountFreezeVo.buildAccountTradeLog();
         accountTradeLog.setId(keyGenerator.generateKey().longValue());
+        //幂等性校验(order_id + user_id + status)
         result = accountTradeLogMapper.insertSelective(accountTradeLog);
         if (result == 0) throw new AccountException("系统繁忙, 稍后重试");
 
@@ -85,10 +90,14 @@ public class AccountServiceImpl implements AccountService {
     @Transactional
     public void refund(OrderPayVo orderPayVo) {
         AccountTradeLog accountTradeLog = copyToRefund(orderPayVo);
-        int result = accountMapper.updateDecrBalanceAndIncrLockBalance(orderPayVo.getUserId(), accountTradeLog.getBalance());
-        if (result == 0) throw new AccountException("账户余额不足");
-        result = accountTradeLogMapper.insertSelective(accountTradeLog);
+        if (null != accountTradeLogMapper.selectByOrderIdAndUserIdAndStatus(orderPayVo.getOrderId(), orderPayVo.getUserId(), AccountTradeLog.Status.refund)) {
+            logger.info("重复调用退款接口, orderPayVo -> {}", orderPayVo);
+            return;
+        }
+        int result = accountTradeLogMapper.insertSelective(accountTradeLog);
         if (result == 0) throw new AccountException("系统繁忙, 稍后重试");
+        result = accountMapper.updateDecrBalanceAndIncrLockBalance(orderPayVo.getUserId(), accountTradeLog.getBalance());
+        if (result == 0) throw new AccountException("账户余额不足");
     }
 
     private AccountTradeLog copyToRefund(OrderPayVo orderPayVo ) {
@@ -98,6 +107,7 @@ public class AccountServiceImpl implements AccountService {
         Long from = accountTradeLog.getFromAccountId();
         Long to = accountTradeLog.getToAccountId();
         accountTradeLog.setRemark("refund");
+        accountTradeLog.setStatus(AccountTradeLog.Status.refund);
         accountTradeLog.setToAccountId(from);
         accountTradeLog.setFromAccountId(to);
         accountTradeLog.setBalance(amount);

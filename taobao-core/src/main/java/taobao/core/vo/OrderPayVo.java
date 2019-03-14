@@ -29,4 +29,13 @@ public class OrderPayVo {
     public void setTradeNo(Long tradeNo) {
         this.tradeNo = tradeNo;
     }
+
+    @Override
+    public String toString() {
+        return "OrderPayVo{" +
+                "userId=" + userId +
+                ", orderId='" + orderId + '\'' +
+                ", tradeNo=" + tradeNo +
+                '}';
+    }
 }

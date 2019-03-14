@@ -135,6 +135,12 @@ public class ProductMapperTest {
     }
 
 
+    @Test
+    public void testFindProductFromDb () {
+        productService.findProductDetailFromDB(307553600131825665L);
+    }
+
+
 
 
 }

@@ -31,6 +31,7 @@ public class Constant {
         String pay_success_notify_order = "pay-success-notify-order";
         String order_update_failed_topic = "order-update-failed-topic";
         String account_refund_topic = "account-refund-topic";
+        String inventory_lock_incr_topic = "inventory-lock-incr-topic";
     }
 
     public static class HashKey {

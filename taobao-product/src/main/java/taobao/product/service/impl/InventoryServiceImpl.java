@@ -3,15 +3,21 @@ package taobao.product.service.impl;
 import com.google.common.collect.Lists;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
 import taobao.core.RedisService;
+import taobao.core.vo.InventoryLockIncrVo;
 import taobao.product.cache.InventoryCacheContainer;
 import taobao.product.constant.RedisPrefix;
 import taobao.core.vo.InventoryWebVo;
+import taobao.product.exception.ProductEventException;
+import taobao.product.mapper.ProductSpecsLocknumLogMapper;
 import taobao.product.mapper.ProductSpecsMapper;
 import taobao.product.models.ProductSpecs;
+import taobao.product.models.ProductSpecsLocknumLog;
 import taobao.product.script.LuaScript;
 import taobao.product.service.InventoryService;
 import taobao.product.service.ProducerService;
@@ -41,6 +47,9 @@ public class InventoryServiceImpl implements InventoryService {
 
     @Autowired
     InventoryCacheContainer inventoryCacheContainer;
+
+    @Autowired
+    ProductSpecsLocknumLogMapper productSpecsLocknumLogMapper;
 
     private static final Lock lock = new ReentrantLock();
 
@@ -126,4 +135,20 @@ public class InventoryServiceImpl implements InventoryService {
             return Boolean.FALSE;
         }
     }
+
+    @Override
+    @Transactional
+    public Boolean incrLockInventory(InventoryLockIncrVo inventoryLockIncrVo) {
+        ProductSpecsLocknumLog productSpecsLocknumLog = new ProductSpecsLocknumLog();
+        BeanUtils.copyProperties(inventoryLockIncrVo, productSpecsLocknumLog);
+        if( null!= productSpecsLocknumLogMapper.selectByPrimaryKey(productSpecsLocknumLog.getId())) {
+            logger.info("重复消费=======, productSpecsLocknumLog -> {}", inventoryLockIncrVo);
+        }
+        int result = productSpecsLocknumLogMapper.insert(productSpecsLocknumLog);
+        if (result == 0) throw new ProductEventException("系统繁忙, 稍后重试");
+        result = productSpecsMapper.updateLockInventory (inventoryLockIncrVo.getIncrLockNum(), inventoryLockIncrVo.getProductId(), inventoryLockIncrVo.getSpecsId());
+        if (result == 0) throw new ProductEventException("修改被锁库存失败, 请检查锁库存的数量");
+        return Boolean.TRUE;
+    }
+
 }

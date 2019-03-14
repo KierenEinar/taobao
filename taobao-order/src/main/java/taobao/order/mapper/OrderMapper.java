@@ -47,8 +47,8 @@ public interface OrderMapper {
     })
     int updateByPrimaryKey(Order record);
 
-    @Update("update orders set status = #{status}, update_time = #{updateTime} where id = #{id} and user_id = #{userId} and status = #{preStatus};")
-    int updateStatusByPreStatusAndId(@Param("id") Long id, @Param("status") String status, @Param("preStatus") String preStatus, @Param("updateTime") Date updateTime, @Param("userId") Long userId);
+    @Update("update orders set status = #{status}, trade_no = #{tradeNo}, update_time = #{updateTime} where id = #{id} and user_id = #{userId} and status = #{preStatus};")
+    int updateStatusByPreStatusAndId(@Param("id") Long id, @Param("tradeNo") String tradeNo, @Param("status") String status, @Param("preStatus") String preStatus, @Param("updateTime") Date updateTime, @Param("userId") Long userId);
 
     @Select("select * from order where id = #{id} and user_id = #{userId};")
     Order selectByIdAndUserId(@Param("id") Long id,@Param("userId") Long userId);

@@ -293,6 +293,9 @@ public class ProductServiceImpl implements ProductService {
         if (Objects.nonNull(productDetailVoCache)) return productDetailVoCache;
         ProductDetailVo productDetailVo = findProductDetailFromRedis(productId);
         if (Objects.isNull(productDetailVo)) productDetailVo = sendProductCreate2RedisMessage(productId);
+
+
+
         logger.info("find product from redis -> {}", productDetailVo);
         if (Objects.isNull(productDetailVoCache) && Objects.nonNull(productDetailVo) && Objects.nonNull(productDetailVo.getProduct())) {
             localMQTemplate.sendAsync(Constant.Topic.product_create_local_cache_topic, productDetailVo, new LocalMQSendCallback() {

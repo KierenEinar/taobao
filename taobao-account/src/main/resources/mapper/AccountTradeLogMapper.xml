@@ -11,13 +11,17 @@
     <result column="channel" jdbcType="VARCHAR" property="channel" />
     <result column="order_id" jdbcType="VARCHAR" property="orderId" />
     <result column="user_id" jdbcType="BIGINT" property="userId" />
+    <result column="status" jdbcType="VARCHAR" property="status" />
   </resultMap>
   <sql id="Base_Column_List">
-    id, from_account_id, to_account_id, create_time, balance, remark, channel, order_id, user_id
+    id, from_account_id, to_account_id, create_time, balance, remark, channel, order_id, user_id, status
   </sql>
   <insert id="insertSelective" parameterType="taobao.account.model.AccountTradeLog">
     insert into account_trade_log
     <trim prefix="(" suffix=")" suffixOverrides=",">
+      <if test="id != null">
+        id,
+      </if>
       <if test="fromAccountId != null">
         from_account_id,
       </if>
@@ -42,8 +46,14 @@
       <if test="userId != null">
         user_id,
       </if>
+      <if test="status != null">
+        status,
+      </if>
     </trim>
     <trim prefix="values (" suffix=")" suffixOverrides=",">
+      <if test="id != null">
+        #{id,jdbcType=BIGINT},
+      </if>
       <if test="fromAccountId != null">
         #{fromAccountId,jdbcType=BIGINT},
       </if>
@@ -67,6 +77,9 @@
       </if>
       <if test="userId != null">
         #{userId,jdbcType=BIGINT},
+      </if>
+      <if test="status != null">
+        #{status,jdbcType=VARCHAR},
       </if>
     </trim>
   </insert>
@@ -96,6 +109,9 @@
       </if>
       <if test="userId != null">
         user_id = #{userId,jdbcType=BIGINT},
+      </if>
+      <if test="status != null">
+        #{status,jdbcType=VARCHAR},
       </if>
     </set>
     where id = #{id,jdbcType=BIGINT}

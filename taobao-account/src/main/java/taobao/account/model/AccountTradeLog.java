@@ -22,6 +22,13 @@ public class AccountTradeLog {
 
     private Long userId;
 
+    private String status;
+
+    public interface Status {
+        String payment = "payment";
+        String refund  = "refund";
+    }
+
     public interface Channel{
         String union_pay = "union_pay";
         String platform = "platform";
@@ -97,5 +104,13 @@ public class AccountTradeLog {
 
     public void setUserId(Long userId) {
         this.userId = userId;
+    }
+
+    public String getStatus() {
+        return status;
+    }
+
+    public void setStatus(String status) {
+        this.status = status;
     }
 }

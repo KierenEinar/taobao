@@ -54,4 +54,7 @@ public interface ProductSpecsMapper {
     int updateInventory (@Param("productId") Long productId, @Param("specsId") Long specsId, @Param("num") Integer nums);
 
     ProductSpecs selectBySpeces(InventoryWebVo vos);
+
+    @Update("update product_specs set lock_num = lock_num + #{num} where product_id = #{productId} and id = #{specsId} and (lock_num + #{num}) > 0;")
+    int updateLockInventory(@Param("num") Integer num, @Param("productId") Long productId, @Param("specsId") Long specsId);
 }
