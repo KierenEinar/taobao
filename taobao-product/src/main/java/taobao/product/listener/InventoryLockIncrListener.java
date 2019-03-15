@@ -10,7 +10,7 @@ import taobao.rocketmq.annotation.RocketMQMessageListener;
 import taobao.rocketmq.core.RocketMQListener;
 
 @Service
-@RocketMQMessageListener(consumerGroup = Constant.Producer.inventory_update_group, topic = Constant.Topic.inventory_lock_incr_topic)
+@RocketMQMessageListener(consumerGroup = Constant.Producer.inventory_lock_update_group, topic = Constant.Topic.inventory_lock_incr_topic)
 public class InventoryLockIncrListener implements RocketMQListener<String> {
 
     @Autowired

@@ -11,6 +11,7 @@ public class Constant {
         String order_group = "order-group";
         String order_transaction_group = "order-transaction-group";
         String account_group = "account_group";
+        String inventory_lock_update_group = "inventory-lock-update-group";
     }
 
     public interface TransactionProducer {

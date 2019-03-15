@@ -249,6 +249,7 @@ public class DefaultRocketMQListenerContainer implements RocketMQListenerContain
         try {
             defaultMQPushConsumer.start();
         } catch (MQClientException e) {
+            logger.info("consumerGroup -> {}", consumerGroup);
             throw new IllegalStateException("failed to start rocketmq push consumer", e);
         }
         this.setRunning(Boolean.TRUE);

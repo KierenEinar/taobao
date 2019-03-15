@@ -50,11 +50,11 @@ public interface ProductSpecsMapper {
     @Select("select * from product_specs where product_id = #{arg0};")
     List<ProductSpecs> selectByProductId(Long productId);
 
-    @Update("update product_specs set stock = stock - #{num}, lock_num = lock_num + #{num} where product_id = #{productId} and id = #{specsId} and (stock - #{num}) > 0;")
+    @Update("update product_specs set stock = stock - #{num}, lock_num = lock_num + #{num} where product_id = #{productId} and id = #{specsId} and (stock - #{num}) >= 0;")
     int updateInventory (@Param("productId") Long productId, @Param("specsId") Long specsId, @Param("num") Integer nums);
 
     ProductSpecs selectBySpeces(InventoryWebVo vos);
 
-    @Update("update product_specs set lock_num = lock_num + #{num} where product_id = #{productId} and id = #{specsId} and (lock_num + #{num}) > 0;")
+    @Update("update product_specs set lock_num = lock_num + #{num} where product_id = #{productId} and id = #{specsId} and (lock_num + #{num}) >= 0;")
     int updateLockInventory(@Param("num") Integer num, @Param("productId") Long productId, @Param("specsId") Long specsId);
 }
